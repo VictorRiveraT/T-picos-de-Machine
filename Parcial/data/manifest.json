@@ -1,0 +1,80 @@
+{
+  "target": 2000000,
+  "seed": 2026,
+  "min_words": 2,
+  "max_words": 60,
+  "max_ratio": 3.0,
+  "language_threshold": 0.6,
+  "language_model_sha256": "7e69ec5451bc261cc7844e49e4792a85d7f09c06789ec800fc4a44aec362764e",
+  "sources": [
+    {
+      "name": "Kaggle_LonnieQin",
+      "kind": "csv",
+      "raw": 113322,
+      "url": "/root/.cache/kagglehub/datasets/lonnieqin/englishspanish-translation-dataset/versions/1/data.csv",
+      "page": "https://www.kaggle.com/datasets/lonnieqin/englishspanish-translation-dataset",
+      "license": "Kaggle",
+      "sha256": "1a09b24ce4d277e281c64b6563b0caeaa7dec84f69c1547deaf504a5deb395d6",
+      "counts": {
+        "read": 118964,
+        "rejected_basic": 686,
+        "rejected_language": 4935,
+        "accepted_unique": 95532,
+        "duplicate_either_side": 17811
+      }
+    },
+    {
+      "name": "TED2020_v1",
+      "kind": "zip",
+      "raw": 416846,
+      "url": "https://object.pouta.csc.fi/OPUS-TED2020/v1/moses/en-es.txt.zip",
+      "page": "https://opus.nlpl.eu/datasets/TED2020",
+      "license": "Consultar condiciones de TED y ficha OPUS",
+      "sha256": "b3f9d1396884d763a6eebb15fb7538bcb7f97a5cf201722b69b66fbef04b62d9",
+      "counts": {
+        "read": 416846,
+        "rejected_basic": 15092,
+        "rejected_language": 10103,
+        "accepted_unique": 386501,
+        "duplicate_either_side": 5150
+      }
+    },
+    {
+      "name": "NewsCommentary_Helsinki",
+      "kind": "parquet",
+      "raw": 238872,
+      "url": "https://huggingface.co/datasets/Helsinki-NLP/news_commentary/resolve/bbaf548083e788e0e6d2ca68efc325283fe2aff5/en-es/train-00000-of-00001.parquet",
+      "page": "https://huggingface.co/datasets/Helsinki-NLP/news_commentary",
+      "license": "Conservar procedencia y consultar fuente",
+      "sha256": "9d9a87fe542c1e88576a10531f9cd456ebad678c8e388ca2257150c4c314211c",
+      "counts": {
+        "read": 238872,
+        "rejected_basic": 6333,
+        "rejected_language": 5671,
+        "accepted_unique": 226149,
+        "duplicate_either_side": 719
+      }
+    },
+    {
+      "name": "Europarl_v7",
+      "kind": "tgz",
+      "raw": 1965734,
+      "url": "https://www.statmt.org/europarl/v7/es-en.tgz",
+      "page": "https://www.statmt.org/europarl/",
+      "license": "Ver Terms of Use del corpus; citar Koehn (2005)",
+      "sha256": "a545b5be4dc7593aab4db7b07dc9be2a381c31aca5a9a77cf18ff77c4370c473",
+      "counts": {
+        "read": 1965734,
+        "rejected_basic": 101807,
+        "rejected_language": 16183,
+        "accepted_unique": 1805049,
+        "duplicate_either_side": 42695
+      }
+    }
+  ],
+  "packages": {
+    "pyarrow": "23.0.1",
+    "fasttext": "0.9.3"
+  },
+  "eligible_unique": 2513231
+}

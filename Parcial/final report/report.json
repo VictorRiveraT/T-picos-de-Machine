@@ -1,0 +1,26 @@
+{
+  "total_cargado": 2000000,
+  "candidatos_train": 1996000,
+  "validation": 2000,
+  "test": 2000,
+  "fuente_excel": "pares_entrenamiento_2M.xlsx",
+  "clean_candidates": 1996000,
+  "eligible_train": 1995994,
+  "length_removed": 6,
+  "requested_train": 2000000,
+  "train_by_source": {
+    "Excel": 1995994
+  },
+  "sizes": {
+    "train": 1995994,
+    "validation": 2000,
+    "test": 2000
+  },
+  "train_length_bins": {
+    "hasta_32": 1135997,
+    "33_a_64": 775943,
+    "65_a_128": 84054
+  },
+  "tokenizer_sha256": "4886e140109e4830bf7c9f77edd12f70a57f7c42f449095461679594891f15e4",
+  "train_fingerprint": "f11ea82f11465602"
+}

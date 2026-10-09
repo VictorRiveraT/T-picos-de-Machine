@@ -1,0 +1,15 @@
+# Archivos pesados que superan el límite de 100 MB de GitHub
+*.xlsx
+*.pth
+*.pt
+*.bin
+*.zip
+*.tar.gz
+*.tgz
+*.parquet
+
+# Archivos de entorno y temporales
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.DS_Store
