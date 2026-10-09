@@ -19,6 +19,7 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 | **Inicialización** | Aleatoria (Xavier). **Sin pesos, embeddings ni tokenizadores preentrenados** |
 | **Tokenizador** | BPE a nivel de bytes (*ByteLevel*), vocabulario de **16.000 tokens**, entrenado solo con datos de train |
 | **Corpus** | 2.000.000 de pares limpios (Kaggle, TED2020, NewsCommentary, Europarl) |
+| **Descarga Dataset** | [Google Drive - Dataset (Transformer)](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L) |
 | **Particionado** | 1.995.994 Train / 2.000 Validación / 2.000 Test (semilla fija `2026`) |
 | **Resultados Test** | **BLEU:** `42.98` \| **chrF++:** `64.42` \| **COMET:** `0.8653` |
 | **Entorno** | Google Colab / GPU local (RTX PRO 6000 / RTX 5050) |
@@ -32,8 +33,7 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 ├── Parcial/                                 # Entregables y artefactos del Examen Parcial
 │   ├── data/
 │   │   ├── eda_avanzado.png                 # Visualizaciones del EDA del corpus
-│   │   ├── manifest.json                    # Manifiesto con conteos por fuente, rechazos y SHA-256
-│   │   └── pares_entrenamiento_2M.xlsx      # Dataset curado de 2.000.000 de pares (Partes 1 y 2)
+│   │   └── manifest.json                    # Manifiesto con conteos por fuente, rechazos y SHA-256
 │   ├── docs/
 │   │   ├── Informe (Traductor).pdf          # Informe académico completo del parcial
 │   │   └── Presentación (Traductor).pdf     # Diapositivas de la exposición (~12 min)
@@ -47,14 +47,19 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 │       ├── Transformer_(Traductor)_300k.ipynb # Entrenamiento de la versión Piloto (300k pares, 8 épocas)
 │       └── Transformer_(Traductor)_2M.ipynb   # Entrenamiento de la versión Completa (2M pares, 15 épocas)
 ├── Final/                                   # (Reservado para la entrega final del curso)
+├── .gitignore                               # Exclusión de archivos pesados de datos (>100MB)
 └── README.md                                # Documentación principal del repositorio
 ```
+
+> **Nota sobre el Dataset (`pares_entrenamiento_2M.xlsx`):** Debido al límite de 100 MB impuesto por GitHub para archivos individuales, el archivo Excel comprimido/completo de 240 MB está alojado en Google Drive y se puede descargar desde el enlace: [Descargar pares_entrenamiento_2M.xlsx de Google Drive](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L).
 
 ---
 
 ## 1. Construcción y Composición del Corpus
 
 El dataset fue procesado en flujo mediante el notebook `Dataset_(Traductor).ipynb` usando SQLite y deduplicación basada en hashes SHA-256.
+
+- **Acceso directo al archivo comprimido:** [Carpeta Google Drive con `pares_entrenamiento_2M.xlsx`](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L)
 
 ### Fuentes de Datos y Filtrado (Extraído de `Parcial/data/manifest.json`)
 
@@ -150,9 +155,8 @@ Extraídos directamente de `Parcial/final report/test_final_translations.jsonl`:
 
 ## 6. Cómo Ejecutar y Reproducir
 
-1. **Generación del Dataset:**
-   - Abrir y ejecutar [`Parcial/notebooks/Dataset_(Traductor).ipynb`](Parcial/notebooks/Dataset_(Traductor).ipynb) en Google Colab o entorno Jupyter local.
-   - Genera el paquete con los archivos Excel (`pares_entrenamiento_2M.xlsx`), el gráfico EDA (`eda_avanzado.png`) y el manifiesto (`manifest.json`).
+1. **Generación / Obtención del Dataset:**
+   - Descargar el archivo `pares_entrenamiento_2M.xlsx` desde [Google Drive](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L) o volver a procesarlo con [`Parcial/notebooks/Dataset_(Traductor).ipynb`](Parcial/notebooks/Dataset_(Traductor).ipynb).
 
 2. **Entrenamiento y Evaluación del Transformer:**
    - Cargar `pares_entrenamiento_2M.xlsx` y `manifest.json` en la carpeta de trabajo.
@@ -164,7 +168,7 @@ Extraídos directamente de `Parcial/final report/test_final_translations.jsonl`:
 ## Entregables del Examen Parcial
 
 - [x] **Notebooks de Código:** [`Parcial/notebooks/Dataset_(Traductor).ipynb`](Parcial/notebooks/Dataset_(Traductor).ipynb) y [`Parcial/notebooks/Transformer_(Traductor)_2M.ipynb`](Parcial/notebooks/Transformer_(Traductor)_2M.ipynb)
-- [x] **Manifiesto y Datos Limpios:** [`Parcial/data/manifest.json`](Parcial/data/manifest.json) y [`Parcial/data/pares_entrenamiento_2M.xlsx`](Parcial/data/pares_entrenamiento_2M.xlsx)
+- [x] **Manifiesto y Datos Limpios:** [`Parcial/data/manifest.json`](Parcial/data/manifest.json) y Enlace de descarga en Google Drive
 - [x] **Informe Escrito:** [`Parcial/docs/Informe (Traductor).pdf`](Parcial/docs/Informe (Traductor).pdf)
 - [x] **Presentación Ejecutiva:** [`Parcial/docs/Presentación (Traductor).pdf`](Parcial/docs/Presentación (Traductor).pdf)
 - [x] **Reporte y Métricas de Test:** [`Parcial/final report/test_final_metrics.json`](Parcial/final report/test_final_metrics.json) y [`Parcial/final report/test_final_translations.jsonl`](Parcial/final report/test_final_translations.jsonl)
