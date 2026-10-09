@@ -19,7 +19,7 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 | **Inicialización** | Aleatoria (Xavier). **Sin pesos, embeddings ni tokenizadores preentrenados** |
 | **Tokenizador** | BPE a nivel de bytes (*ByteLevel*), vocabulario de **16.000 tokens**, entrenado solo con datos de train |
 | **Corpus** | 2.000.000 de pares limpios (Kaggle, TED2020, NewsCommentary, Europarl) |
-| **Descarga Dataset** | [Google Drive - Dataset (Transformer)](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L) |
+| **Descarga Dataset** | [Google Drive - Dataset (Transformer)](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbI0L?usp=sharing) |
 | **Particionado** | 1.995.994 Train / 2.000 Validación / 2.000 Test (semilla fija `2026`) |
 | **Resultados Test** | **BLEU:** `42.98` \| **chrF++:** `64.42` \| **COMET:** `0.8653` |
 | **Entorno** | Google Colab / GPU local (RTX PRO 6000 / RTX 5050) |
@@ -51,7 +51,7 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 └── README.md                                # Documentación principal del repositorio
 ```
 
-> **Nota sobre el Dataset (`pares_entrenamiento_2M.xlsx`):** Debido al límite de 100 MB impuesto por GitHub para archivos individuales, el archivo Excel comprimido/completo de 240 MB está alojado en Google Drive y se puede descargar desde el enlace: [Descargar pares_entrenamiento_2M.xlsx de Google Drive](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L).
+> **Nota sobre el Dataset (`pares_entrenamiento_2M.xlsx`):** Debido al límite de 100 MB impuesto por GitHub para archivos individuales, el archivo Excel comprimido/completo de 240 MB está alojado en Google Drive y se puede descargar desde el enlace: [Descargar pares_entrenamiento_2M.xlsx de Google Drive](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbI0L?usp=sharing).
 
 ---
 
@@ -59,7 +59,7 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 
 El dataset fue procesado en flujo mediante el notebook `Dataset_(Traductor).ipynb` usando SQLite y deduplicación basada en hashes SHA-256.
 
-- **Acceso directo al archivo comprimido:** [Carpeta Google Drive con `pares_entrenamiento_2M.xlsx`](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L)
+- **Acceso directo al archivo comprimido:** [Carpeta Google Drive con `pares_entrenamiento_2M.xlsx`](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbI0L?usp=sharing)
 
 ### Fuentes de Datos y Filtrado (Extraído de `Parcial/data/manifest.json`)
 
@@ -156,7 +156,7 @@ Extraídos directamente de `Parcial/final report/test_final_translations.jsonl`:
 ## 6. Cómo Ejecutar y Reproducir
 
 1. **Generación / Obtención del Dataset:**
-   - Descargar el archivo `pares_entrenamiento_2M.xlsx` desde [Google Drive](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbl0L) o volver a procesarlo con [`Parcial/notebooks/Dataset_(Traductor).ipynb`](Parcial/notebooks/Dataset_(Traductor).ipynb).
+   - Descargar el archivo `pares_entrenamiento_2M.xlsx` desde [Google Drive](https://drive.google.com/drive/folders/1_63ZbrdyPn6uv4MdBPMSdKjnT8RVbI0L?usp=sharing) o volver a procesarlo con [`Parcial/notebooks/Dataset_(Traductor).ipynb`](Parcial/notebooks/Dataset_(Traductor).ipynb).
 
 2. **Entrenamiento y Evaluación del Transformer:**
    - Cargar `pares_entrenamiento_2M.xlsx` y `manifest.json` en la carpeta de trabajo.
