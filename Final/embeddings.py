@@ -1,3 +1,7 @@
+import json
+import urllib.parse
+import urllib.request
+
 import torch
 from transformers import CLIPModel, CLIPProcessor
 
@@ -25,3 +29,23 @@ def embed_texto(textos):
     """textos: lista de str -> array (n, 512) normalizado."""
     inputs = processor(text=textos, return_tensors="pt", padding=True, truncation=True).to(DEVICE)
     return _normalizar(model.get_text_features(**inputs))
+
+
+def traducir_a_ingles(texto: str) -> str:
+    """Traduce la consulta a inglés si el usuario escribe en español u otro idioma.
+    Si falla la conexión o ya está en inglés, retorna el texto original de forma segura."""
+    texto = texto.strip()
+    if not texto:
+        return texto
+    try:
+        url = (
+            "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q="
+            + urllib.parse.quote(texto)
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=2.5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            traducido = "".join([part[0] for part in data[0] if part[0]]).strip()
+            return traducido if traducido else texto
+    except Exception:
+        return texto

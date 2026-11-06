@@ -31,3 +31,5 @@ Final/annotations/
 # Resultados generados localmente por evaluación y benchmarks
 Final/resultados_*.json
 Final/benchmark_latencia.png
+Final/index_hnsw.faiss
+
