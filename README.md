@@ -48,8 +48,7 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 │       └── Transformer_(Traductor)_2M.ipynb   # Entrenamiento de la versión Completa (2M pares, 15 épocas)
 ├── Final/                                   # Buscador multimodal de imágenes con CLIP y FAISS (Proyecto Final)
 ├── PC/                                      # Prácticas calificadas del curso (PC)
-├── Documentos/                              # Rúbricas y lineamientos del curso
-├── .gitignore                               # Exclusión de archivos pesados y entornos virtuales
+├── .gitignore                               # Exclusión de archivos pesados, entornos virtuales y resultados locales
 └── README.md                                # Documentación principal del repositorio
 ```
 

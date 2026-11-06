@@ -19,9 +19,15 @@ __pycache__/
 *.pyc
 .DS_Store
 
+# Archivos de contexto personal/local
+Documentos/
+
 # Datos y descargas pesadas del proyecto final (se generan con descargar_dataset.py)
 descargas/
 Final/descargas/
 Final/imagenes/
 Final/annotations/
 
+# Resultados generados localmente por evaluación y benchmarks
+Final/resultados_*.json
+Final/benchmark_latencia.png
