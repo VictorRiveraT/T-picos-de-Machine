@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+descargas/
+*.zip
+*.tar.gz
+resultados_*.json
+benchmark_latencia.png

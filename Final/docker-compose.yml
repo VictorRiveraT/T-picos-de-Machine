@@ -1,0 +1,17 @@
+services:
+  pinsearch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pinsearch-multimodal
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./imagenes:/app/imagenes
+      - ./anotaciones:/app/anotaciones
+      - ./index.faiss:/app/index.faiss
+      - ./archivos.json:/app/archivos.json
+    environment:
+      - PORT=8000
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
