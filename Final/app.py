@@ -10,6 +10,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
+# Asegurar que el directorio de trabajo sea la carpeta Final para evitar problemas
+# con caracteres especiales (como acentos en 'Tópicos') en las librerías C++ de FAISS
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASE_DIR)
+
 from embeddings import DEVICE, MODEL_NAME, embed_imagenes, embed_texto, traducir_a_ingles
 
 app = FastAPI(
