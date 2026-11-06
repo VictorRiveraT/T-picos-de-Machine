@@ -8,8 +8,20 @@
 *.tgz
 *.parquet
 
+# Entornos virtuales
+.venv/
+venv/
+env/
+
 # Archivos de entorno y temporales
 .ipynb_checkpoints/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Datos y descargas pesadas del proyecto final (se generan con descargar_dataset.py)
+descargas/
+Final/descargas/
+Final/imagenes/
+Final/annotations/
+

@@ -46,8 +46,10 @@ Se construyó e implementó un modelo de traducción neuronal **Encoder-Decoder 
 │       ├── Dataset_(Traductor).ipynb        # Extracción, normalización, filtrado, deduplicación y EDA
 │       ├── Transformer_(Traductor)_300k.ipynb # Entrenamiento de la versión Piloto (300k pares, 8 épocas)
 │       └── Transformer_(Traductor)_2M.ipynb   # Entrenamiento de la versión Completa (2M pares, 15 épocas)
-├── Final/                                   # (Reservado para la entrega final del curso)
-├── .gitignore                               # Exclusión de archivos pesados de datos (>100MB)
+├── Final/                                   # Buscador multimodal de imágenes con CLIP y FAISS (Proyecto Final)
+├── PC/                                      # Prácticas calificadas del curso (PC)
+├── Documentos/                              # Rúbricas y lineamientos del curso
+├── .gitignore                               # Exclusión de archivos pesados y entornos virtuales
 └── README.md                                # Documentación principal del repositorio
 ```
 
