@@ -42,7 +42,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
       padding: 0.75rem 1.5rem;
@@ -170,6 +170,87 @@
       transform: scale(1.05);
     }
 
+    /* HISTORIAL DE BÚSQUEDAS DROPDOWN */
+    .history-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 0;
+      display: none;
+      z-index: 200;
+      animation: fadeIn 0.15s ease-out;
+    }
+    .history-dropdown.active { display: block; }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.3rem 1.2rem 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .history-clear-all {
+      background: none;
+      border: none;
+      color: var(--pinterest-red);
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: inherit;
+    }
+    .history-clear-all:hover { text-decoration: underline; }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .history-item:hover { background: var(--bg-secondary); }
+
+    .history-item-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text-primary);
+      font-size: 0.92rem;
+      font-weight: 600;
+      flex: 1;
+    }
+    .history-item-left svg {
+      width: 16px;
+      height: 16px;
+      fill: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .history-delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+    }
+    .history-delete-btn:hover { color: var(--pinterest-red); }
+
     /* RIGHT CONTROLS */
     .controls {
       display: flex;
@@ -212,6 +293,25 @@
     }
     .pill-btn.primary:hover {
       background: var(--pinterest-red-hover);
+    }
+
+    .pill-btn.saved-tab.active {
+      background: var(--pinterest-red);
+      color: white;
+      border-color: var(--pinterest-red);
+    }
+
+    .badge-count {
+      background: rgba(0,0,0,0.12);
+      color: inherit;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: var(--pill-radius);
+      margin-left: 2px;
+    }
+    .pill-btn.saved-tab.active .badge-count {
+      background: rgba(255,255,255,0.3);
     }
 
     .select-pill {
@@ -378,6 +478,27 @@
       gap: 0.35rem;
     }
 
+    /* SAVED BOARD HEADER */
+    .board-header {
+      max-width: 1440px;
+      margin: 1rem auto;
+      padding: 0 1.5rem;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+    .board-header.active { display: flex; }
+    .board-header h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+    .board-actions {
+      display: flex;
+      gap: 0.6rem;
+    }
+
     /* MASONRY GRID PINTEREST */
     main {
       flex: 1;
@@ -431,7 +552,7 @@
     .pin-overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.7) 100%);
+      background: linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.75) 100%);
       opacity: 0;
       transition: opacity 0.25s ease;
       display: flex;
@@ -449,6 +570,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 6px;
+    }
+
+    .overlay-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .sim-badge {
@@ -468,23 +596,50 @@
     .sim-badge.high { background: rgba(46, 125, 50, 0.85); }
 
     .btn-visual-search {
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text-primary);
+      border: none;
+      border-radius: var(--pill-radius);
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .btn-visual-search:hover {
+      background: #ffffff;
+      transform: scale(1.05);
+    }
+
+    .btn-save-pin {
       background: var(--pinterest-red);
       color: white;
       border: none;
       border-radius: var(--pill-radius);
       padding: 6px 12px;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       transition: all 0.2s;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
     }
-    .btn-visual-search:hover {
+    .btn-save-pin:hover {
       background: var(--pinterest-red-hover);
       transform: scale(1.05);
+    }
+    .btn-save-pin.saved {
+      background: #111111;
+      color: #ffffff;
+    }
+    .btn-save-pin.saved:hover {
+      background: #333333;
     }
 
     .overlay-bottom {
@@ -527,6 +682,32 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* TOAST FLOATING NOTIFICATION */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #111111;
+      color: #ffffff;
+      padding: 0.75rem 1.4rem;
+      border-radius: var(--pill-radius);
+      font-size: 0.9rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      z-index: 1200;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      pointer-events: none;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
 
     /* MODAL PIN DETAIL */
@@ -641,11 +822,16 @@
 
     .modal-actions {
       display: flex;
-      gap: 0.75rem;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .modal-actions-row {
+      display: flex;
+      gap: 0.6rem;
     }
 
     .btn-large {
-      flex: 1;
       padding: 0.8rem 1.2rem;
       border-radius: var(--pill-radius);
       font-size: 0.95rem;
@@ -657,6 +843,7 @@
       justify-content: center;
       gap: 0.5rem;
       transition: all 0.2s;
+      flex: 1;
     }
     .btn-large.primary {
       background: var(--pinterest-red);
@@ -671,6 +858,13 @@
     }
     .btn-large.secondary:hover {
       background: var(--bg-hover);
+    }
+    .btn-large.dark {
+      background: #111111;
+      color: white;
+    }
+    .btn-large.dark:hover {
+      background: #333333;
     }
 
     /* EMPTY / ERROR STATE */
@@ -706,7 +900,7 @@
         </div>
       </div>
 
-      <!-- TABS TEXTO / IMAGEN -->
+      <!-- TABS TEXTO / IMAGEN / GUARDADOS -->
       <div class="controls">
         <button id="tab-texto" class="pill-btn active" onclick="cambiarTab('texto')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -716,17 +910,34 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
           <span class="label">Imagen</span>
         </button>
+        <button id="tab-guardados" class="pill-btn saved-tab" onclick="mostrarPinesGuardados()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span class="label">Guardados</span>
+          <span class="badge-count" id="badge-saved-count">0</span>
+        </button>
       </div>
 
-      <!-- SEARCH BAR -->
+      <!-- SEARCH BAR CON HISTORIAL -->
       <div class="search-wrapper">
         <div class="search-bar">
           <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          <input type="text" id="query-input" placeholder="Buscar ideas, fotos ('a sleeping cat', 'perro en la playa')..." onkeydown="if(event.key==='Enter')ejecutarBusquedaTexto()" oninput="toggleClearBtn()">
+          <input type="text" id="query-input" placeholder="Buscar ideas, fotos ('a sleeping cat', 'perro en la playa')..."
+                 onkeydown="if(event.key==='Enter')ejecutarBusquedaTexto()"
+                 onfocus="mostrarHistorial()"
+                 oninput="toggleClearBtn()">
           <button id="clear-search-btn" class="clear-btn" onclick="limpiarInput()">✕</button>
           <button class="camera-trigger" title="Buscar por imagen" onclick="cambiarTab('imagen')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
           </button>
+        </div>
+
+        <!-- DROPDOWN HISTORIAL DE BÚSQUEDAS -->
+        <div id="history-dropdown" class="history-dropdown">
+          <div class="history-header">
+            <span>Búsquedas recientes</span>
+            <button class="history-clear-all" onclick="limpiarHistorialCompleto(event)">Borrar todo</button>
+          </div>
+          <div id="history-list"></div>
         </div>
       </div>
 
@@ -793,6 +1004,22 @@
     </div>
   </div>
 
+  <!-- HEADER DE TABLERO DE PINES GUARDADOS -->
+  <div id="board-header" class="board-header">
+    <div>
+      <h2 id="board-title">Mis Pines Guardados</h2>
+      <p style="color: var(--text-secondary); font-size: 0.9rem;" id="board-subtitle">Colección privada guardada en tu navegador</p>
+    </div>
+    <div class="board-actions">
+      <button class="pill-btn" onclick="volverDeGuardados()">
+        ← Volver a Búsqueda
+      </button>
+      <button class="pill-btn" style="color: var(--pinterest-red);" onclick="vaciarTableroGuardados()">
+        Vaciar Tablero
+      </button>
+    </div>
+  </div>
+
   <!-- BARRA DE ESTADO / METRICAS -->
   <div class="status-bar" id="status-bar" style="display: none;">
     <div class="status-text">
@@ -812,6 +1039,12 @@
   <main>
     <div id="grid-resultados" class="masonry-grid"></div>
   </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    <span id="toast-text">Pin guardado en tu tablero</span>
+  </div>
 
   <!-- MODAL DE DETALLE PIN -->
   <div id="pin-modal" class="modal-backdrop" onclick="cerrarModal(event)">
@@ -846,13 +1079,19 @@
         </div>
 
         <div class="modal-actions">
-          <button class="btn-large primary" id="btn-modal-similar" onclick="buscarSimilaresDesdeModal()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
-            Buscar similares
+          <button class="btn-large primary" id="btn-modal-save" onclick="guardarPinDesdeModal()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span id="btn-modal-save-text">Guardar en mi tablero</span>
           </button>
-          <a id="btn-modal-open" class="btn-large secondary" href="" target="_blank" download>
-            Descargar
-          </a>
+          <div class="modal-actions-row">
+            <button class="btn-large secondary" id="btn-modal-similar" onclick="buscarSimilaresDesdeModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+              Buscar similares
+            </button>
+            <a id="btn-modal-open" class="btn-large secondary" href="" target="_blank" download>
+              Descargar
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -862,13 +1101,236 @@
     let pestanaActual = 'texto';
     let archivoSeleccionado = null;
     let pinSeleccionado = null;
+    let ultimosResultados = null;
+
+    // LOCAL STORAGE KEYS
+    const STORAGE_KEY_SAVED = 'pinsearch_saved_pins_v1';
+    const STORAGE_KEY_HISTORY = 'pinsearch_search_history_v1';
 
     // Inicialización
     window.addEventListener('DOMContentLoaded', () => {
-      // Búsqueda inicial automática para recibir al usuario con pines
+      actualizarContadorGuardados();
       ejecutarBusquedaTexto('a cozy cat sleeping');
+
+      // Cerrar dropdown de historial al hacer clic afuera
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-wrapper')) {
+          ocultarHistorial();
+        }
+      });
     });
 
+    // TOAST NOTIFICATIONS
+    let toastTimer = null;
+    function mostrarToast(mensaje) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').textContent = mensaje;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+
+    // GESTIÓN DE PINES GUARDADOS (BOARD / FAVORITOS)
+    function obtenerPinesGuardados() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_SAVED)) || {};
+      } catch {
+        return {};
+      }
+    }
+
+    function esPinGuardado(id) {
+      const guardados = obtenerPinesGuardados();
+      return !!guardados[id];
+    }
+
+    function toggleGuardarPin(pin, event) {
+      if (event) event.stopPropagation();
+      const guardados = obtenerPinesGuardados();
+      const yaEstaGuardado = !!guardados[pin.id];
+
+      if (yaEstaGuardado) {
+        delete guardados[pin.id];
+        mostrarToast('Eliminado de tus pines guardados');
+      } else {
+        guardados[pin.id] = {
+          id: pin.id,
+          url: pin.url,
+          score: pin.score || 1.0,
+          porcentaje: pin.porcentaje || 100,
+          caption: pin.caption || 'Fotografía guardada'
+        };
+        mostrarToast('📌 Pin guardado en tu tablero');
+      }
+
+      localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(guardados));
+      actualizarContadorGuardados();
+
+      // Si estamos en la vista de guardados, refrescar el tablero
+      if (pestanaActual === 'guardados') {
+        mostrarPinesGuardados();
+      } else {
+        // Actualizar el botón en la tarjeta actual
+        const btn = document.getElementById(`btn-save-${pin.id}`);
+        if (btn) {
+          const guardadoAhora = !yaEstaGuardado;
+          btn.classList.toggle('saved', guardadoAhora);
+          btn.innerHTML = guardadoAhora ? 'Guardado ✓' : 'Guardar';
+        }
+      }
+    }
+
+    function actualizarContadorGuardados() {
+      const guardados = obtenerPinesGuardados();
+      const count = Object.keys(guardados).length;
+      document.getElementById('badge-saved-count').textContent = count;
+    }
+
+    function mostrarPinesGuardados() {
+      pestanaActual = 'guardados';
+      document.getElementById('tab-texto').classList.remove('active');
+      document.getElementById('tab-imagen').classList.remove('active');
+      document.getElementById('tab-guardados').classList.add('active');
+
+      document.getElementById('panel-imagen').classList.remove('active');
+      document.getElementById('chips-bar').style.display = 'none';
+      document.getElementById('status-bar').style.display = 'none';
+
+      const guardados = obtenerPinesGuardados();
+      const listaPines = Object.values(guardados);
+
+      // Mostrar cabecera de tablero
+      const boardHeader = document.getElementById('board-header');
+      boardHeader.classList.add('active');
+      document.getElementById('board-title').textContent = `Mis Pines Guardados (${listaPines.length})`;
+
+      const grid = document.getElementById('grid-resultados');
+      if (listaPines.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <h3>Aún no tienes pines guardados</h3>
+            <p>Haz clic en el botón "Guardar" en cualquier pin para coleccionarlo aquí.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = listaPines.map((r, i) => `
+        <div class="pin-card" onclick='abrirModal(${JSON.stringify(r)}, ${i + 1})'>
+          <img class="pin-img" src="${r.url}" alt="${r.caption}" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=Imagen'">
+          <div class="pin-overlay">
+            <div class="overlay-top">
+              <span class="sim-badge high">Colección</span>
+              <div class="overlay-top-actions">
+                <button class="btn-visual-search" onclick="event.stopPropagation(); buscarSimilares('${r.id}')" title="Buscar imágenes similares">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                  Similares
+                </button>
+                <button class="btn-save-pin saved" onclick="toggleGuardarPin(${JSON.stringify(r)}, event)" title="Quitar de guardados">
+                  Quitar
+                </button>
+              </div>
+            </div>
+            <div class="overlay-bottom">
+              <div class="pin-caption">${r.caption}</div>
+              <div class="pin-rank">${r.id}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function volverDeGuardados() {
+      document.getElementById('board-header').classList.remove('active');
+      cambiarTab('texto');
+      if (ultimosResultados) {
+        renderizarResultados(ultimosResultados);
+      } else {
+        ejecutarBusquedaTexto('nature and animals');
+      }
+    }
+
+    function vaciarTableroGuardados() {
+      if (confirm('¿Deseas vaciar todos tus pines guardados?')) {
+        localStorage.removeItem(STORAGE_KEY_SAVED);
+        actualizarContadorGuardados();
+        mostrarPinesGuardados();
+        mostrarToast('Tablero de guardados vaciado');
+      }
+    }
+
+    // HISTORIAL DE BÚSQUEDAS RECIENTES
+    function obtenerHistorial() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_HISTORY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function guardarEnHistorial(texto) {
+      const q = texto.trim();
+      if (!q) return;
+      let history = obtenerHistorial();
+      history = history.filter(item => item.toLowerCase() !== q.toLowerCase());
+      history.unshift(q);
+      if (history.length > 7) history = history.slice(0, 7);
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+    }
+
+    function mostrarHistorial() {
+      const history = obtenerHistorial();
+      const dropdown = document.getElementById('history-dropdown');
+      const list = document.getElementById('history-list');
+
+      if (history.length === 0) {
+        dropdown.classList.remove('active');
+        return;
+      }
+
+      list.innerHTML = history.map(item => `
+        <div class="history-item" onclick="seleccionarHistorial('${item.replace(/'/g, "\\'")}')">
+          <div class="history-item-left">
+            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span>${item}</span>
+          </div>
+          <button class="history-delete-btn" onclick="eliminarDeHistorial('${item.replace(/'/g, "\\'")}', event)" title="Eliminar de historial">✕</button>
+        </div>
+      `).join('');
+
+      dropdown.classList.add('active');
+    }
+
+    function ocultarHistorial() {
+      document.getElementById('history-dropdown').classList.remove('active');
+    }
+
+    function seleccionarHistorial(texto) {
+      document.getElementById('query-input').value = texto;
+      toggleClearBtn();
+      ocultarHistorial();
+      ejecutarBusquedaTexto(texto);
+    }
+
+    function eliminarDeHistorial(texto, event) {
+      if (event) event.stopPropagation();
+      let history = obtenerHistorial();
+      history = history.filter(item => item !== texto);
+      localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(history));
+      mostrarHistorial();
+    }
+
+    function limpiarHistorialCompleto(event) {
+      if (event) event.stopPropagation();
+      localStorage.removeItem(STORAGE_KEY_HISTORY);
+      ocultarHistorial();
+      mostrarToast('Historial de búsquedas borrado');
+    }
+
+    // INTERFAZ Y CONTROLES
     function toggleClearBtn() {
       const val = document.getElementById('query-input').value;
       document.getElementById('clear-search-btn').style.display = val ? 'flex' : 'none';
@@ -882,6 +1344,7 @@
 
     function limpiarTodo() {
       limpiarInput();
+      document.getElementById('board-header').classList.remove('active');
       cambiarTab('texto');
       ejecutarBusquedaTexto('nature and animals');
     }
@@ -891,6 +1354,9 @@
       const esTexto = tab === 'texto';
       document.getElementById('tab-texto').classList.toggle('active', esTexto);
       document.getElementById('tab-imagen').classList.toggle('active', !esTexto);
+      document.getElementById('tab-guardados').classList.remove('active');
+      document.getElementById('board-header').classList.remove('active');
+
       document.getElementById('panel-imagen').classList.toggle('active', !esTexto);
       document.getElementById('chips-bar').style.display = esTexto ? 'flex' : 'none';
 
@@ -919,8 +1385,11 @@
     function ejecutarBusquedaActual() {
       if (pestanaActual === 'texto') {
         ejecutarBusquedaTexto();
-      } else {
+      } else if (pestanaActual === 'imagen') {
         ejecutarBusquedaImagen();
+      } else {
+        cambiarTab('texto');
+        ejecutarBusquedaTexto();
       }
     }
 
@@ -962,6 +1431,7 @@
 
     // MOSTRAR SKELETON
     function mostrarSkeleton() {
+      document.getElementById('board-header').classList.remove('active');
       const k = parseInt(document.getElementById('select-k').value) || 6;
       const heights = [280, 360, 240, 320, 400, 300, 350, 260];
       const html = Array.from({ length: k }).map((_, i) =>
@@ -973,6 +1443,7 @@
 
     // RENDERIZAR RESULTADOS ESTILO PINTEREST
     function renderizarResultados(data) {
+      ultimosResultados = data;
       const grid = document.getElementById('grid-resultados');
       if (!data.resultados || data.resultados.length === 0) {
         grid.innerHTML = `
@@ -985,7 +1456,9 @@
         return;
       }
 
-      grid.innerHTML = data.resultados.map((r, i) => `
+      grid.innerHTML = data.resultados.map((r, i) => {
+        const guardado = esPinGuardado(r.id);
+        return `
         <div class="pin-card" onclick='abrirModal(${JSON.stringify(r)}, ${i + 1})'>
           <img class="pin-img" src="${r.url}" alt="${r.caption}" loading="lazy" onerror="this.src='https://placehold.co/400x300?text=Imagen'">
           <div class="pin-overlay">
@@ -993,10 +1466,15 @@
               <span class="sim-badge ${r.score >= 0.28 ? 'high' : ''}">
                 ${r.porcentaje}% match
               </span>
-              <button class="btn-visual-search" onclick="event.stopPropagation(); buscarSimilares('${r.id}')" title="Buscar imágenes similares a esta">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
-                Similares
-              </button>
+              <div class="overlay-top-actions">
+                <button class="btn-visual-search" onclick="event.stopPropagation(); buscarSimilares('${r.id}')" title="Buscar imágenes similares a esta">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12m-3.2 0a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                  Similares
+                </button>
+                <button id="btn-save-${r.id}" class="btn-save-pin ${guardado ? 'saved' : ''}" onclick='toggleGuardarPin(${JSON.stringify(r)}, event)' title="Guardar pin en tu colección">
+                  ${guardado ? 'Guardado ✓' : 'Guardar'}
+                </button>
+              </div>
             </div>
             <div class="overlay-bottom">
               <div class="pin-caption">${r.caption}</div>
@@ -1004,7 +1482,7 @@
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
 
       // Actualizar Status Bar
       const statusBar = document.getElementById('status-bar');
@@ -1026,6 +1504,9 @@
     async function ejecutarBusquedaTexto(queryTexto) {
       const q = queryTexto || document.getElementById('query-input').value.trim();
       if (!q) return;
+
+      ocultarHistorial();
+      guardarEnHistorial(q);
 
       const modo = document.getElementById('select-indice').value;
       const k = document.getElementById('select-k').value;
@@ -1113,7 +1594,32 @@
       document.getElementById('modal-rank').textContent = `#${rank} Resultado`;
       document.getElementById('btn-modal-open').href = pin.url;
 
+      actualizarBotonModalGuardar();
       document.getElementById('pin-modal').classList.add('active');
+    }
+
+    function actualizarBotonModalGuardar() {
+      if (!pinSeleccionado) return;
+      const guardado = esPinGuardado(pinSeleccionado.id);
+      const btn = document.getElementById('btn-modal-save');
+      const text = document.getElementById('btn-modal-save-text');
+
+      if (guardado) {
+        btn.classList.remove('primary');
+        btn.classList.add('dark');
+        text.textContent = 'Guardado en tu tablero ✓';
+      } else {
+        btn.classList.add('primary');
+        btn.classList.remove('dark');
+        text.textContent = 'Guardar en mi tablero';
+      }
+    }
+
+    function guardarPinDesdeModal() {
+      if (pinSeleccionado) {
+        toggleGuardarPin(pinSeleccionado);
+        actualizarBotonModalGuardar();
+      }
     }
 
     function cerrarModal(e) {
