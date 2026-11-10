@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buscador de imágenes (Versión 1 - Mockup Original)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+  .banner-comparativa { background: #e3f2fd; border: 1px solid #90caf9; padding: 0.6rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+  .banner-comparativa a { color: #1565c0; font-weight: bold; text-decoration: none; }
+  .banner-comparativa a:hover { text-decoration: underline; }
+  .tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+  .tabs button { padding: .5rem 1rem; cursor: pointer; border: 1px solid #888; background: #eee; border-radius: 6px; }
+  .tabs button.activo { background: #cfe0f1; font-weight: bold; }
+  .barra { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+  .barra input[type=text] { flex: 1; padding: .5rem; }
+  .barra button { padding: .5rem 1rem; cursor: pointer; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .grid figure { margin: 0; }
+  .grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; border: 1px solid #aaa; }
+  .grid figcaption { font-size: .8rem; color: #555; text-align: center; }
+  .oculto { display: none; }
+</style>
+</head>
+<body>
+
+<div class="banner-comparativa">
+  <span><strong>Versión 1 (Base / Mockup del PDF)</strong></span>
+  <a href="/">Ir a Versión Actual (Estilo Pinterest) →</a>
+</div>
+
+<h1>Buscador de imágenes</h1>
+
+<div class="tabs">
+  <button id="tab-texto" class="activo" onclick="cambiar('texto')">Buscar por texto</button>
+  <button id="tab-imagen" onclick="cambiar('imagen')">Buscar por imagen</button>
+</div>
+
+<div id="panel-texto" class="barra">
+  <input type="text" id="consulta" placeholder="a sleeping cat" onkeydown="if(event.key==='Enter')buscarTexto()">
+  <button onclick="buscarTexto()">Search</button>
+</div>
+
+<div id="panel-imagen" class="barra oculto">
+  <input type="file" id="archivo" accept="image/*">
+  <button onclick="buscarImagen()">Search</button>
+</div>
+
+<div id="resultados" class="grid"></div>
+
+<script>
+function cambiar(tab) {
+  const esTexto = tab === 'texto';
+  document.getElementById('panel-texto').classList.toggle('oculto', !esTexto);
+  document.getElementById('panel-imagen').classList.toggle('oculto', esTexto);
+  document.getElementById('tab-texto').classList.toggle('activo', esTexto);
+  document.getElementById('tab-imagen').classList.toggle('activo', !esTexto);
+  document.getElementById('resultados').innerHTML = '';
+}
+
+function mostrar(resultados) {
+  document.getElementById('resultados').innerHTML = resultados.map((r, i) =>
+    `<figure><img src="${r.url}" alt="Resultado ${i + 1}"><figcaption>#${i + 1} · similitud ${r.score}</figcaption></figure>`
+  ).join('');
+}
+
+async function buscarTexto() {
+  const q = document.getElementById('consulta').value.trim();
+  if (!q) return;
+  const res = await fetch('/api/buscar/texto?k=6&q=' + encodeURIComponent(q));
+  const data = await res.json();
+  mostrar(Array.isArray(data) ? data : (data.resultados || []));
+}
+
+async function buscarImagen() {
+  const archivo = document.getElementById('archivo').files[0];
+  if (!archivo) return;
+  const form = new FormData();
+  form.append('archivo', archivo);
+  const res = await fetch('/api/buscar/imagen?k=6', { method: 'POST', body: form });
+  const data = await res.json();
+  mostrar(Array.isArray(data) ? data : (data.resultados || []));
+}
+</script>
+</body>
+</html>

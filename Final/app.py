@@ -318,6 +318,12 @@ def home():
     return FileResponse("static/index.html")
 
 
+@app.get("/v1")
+def home_v1():
+    """Ruta alternativa para comparar con la primera versión (Mockup original del PDF)."""
+    return FileResponse("static/v1.html")
+
+
 # Servir imágenes locales y estáticos
 if not os.path.exists("imagenes"):
     os.makedirs("imagenes", exist_ok=True)
