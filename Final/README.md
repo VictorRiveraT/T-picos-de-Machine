@@ -1,135 +1,47 @@
-# Buscador Multimodal de Imagenes (Texto e Imagen) - Version 3.0 (PinSearch)
+# PinSearch v4: búsqueda multimodal con PostgreSQL
 
-Sistema de recuperacion y busqueda multimodal de imagenes (Text-to-Image, Image-to-Image y Composed Image Retrieval), con interfaz estilo Pinterest, tablero de guardados y despliegue universal en contenedores Docker, desarrollado para el curso **Topicos Avanzados de Machine Learning (2026-II)**.
+PinSearch permite buscar imágenes COCO 2017 por texto, imagen o una composición de imagen y texto (CIR). CLIP genera embeddings de 512 dimensiones. PostgreSQL 17 con pgvector guarda los embeddings, captions y atributos agrupados, y calcula la similitud de coseno. El índice HNSW acelera las consultas; el modo `flat` ejecuta una búsqueda exacta en la misma base.
 
----
+## Dataset y persistencia
 
-## 1. Arquitectura y Capacidades del Sistema (v3.0)
+El conjunto local consta de **10 000 imágenes reales**: 5 000 de `val2017` y 5 000 de `train2017`. Las categorías de objetos provienen de anotaciones oficiales COCO. Los grupos `familias`, `colores`, `acciones` y `escenas` se derivan con reglas de categorías y captions; no son etiquetas humanas verificadas para cada imagen. Se guardan en `images.attributes` (JSONB) y se devuelven en el API. `/api/buscar/texto` permite filtrar con `familia=animales`, `vehiculos`, `personas`, `comida`, `muebles` o `electronica`.
 
-* **Modelo Multimodal:** OpenAI CLIP (`openai/clip-vit-base-patch32`) mediante la libreria `transformers` de Hugging Face.
-* **Motor de Busqueda Vectorial:** FAISS con conmutacion dinamica entre:
-  * `IndexHNSWFlat` (busqueda aproximada; la latencia debe medirse en cada entorno).
-  * `IndexFlatIP` (busqueda exacta por producto interno / similitud de coseno).
-* **Catalogo SQLite:** `data/catalogo.sqlite3` guarda el ID de FAISS, nombre y caption de cada imagen. El servidor consulta SQLite por lote y no vuelve a leer las anotaciones COCO en cada arranque.
-* **Indexacion incremental:** `indexar.py` procesa solo los archivos nuevos de `imagenes/` y los agrega a los dos indices. Los indices y el catalogo se conservan en `data/`; la copia incluida en el repositorio se usa solo para inicializar el primer arranque.
-* **Busqueda Compuesta Multimodal (Composed Image Retrieval - CIR):**
-  * Permite combinar una imagen base con un texto modificador en el espacio latente de CLIP.
-  * Formula de composicion ponderada:
-    $$v_{comp} = \text{norm}(\alpha \cdot v_{img} + (1 - \alpha) \cdot v_{text})$$
-  * El usuario puede controlar el balance visual vs semantico mediante el factor alpha.
-* **Filtro de Umbral de Confianza:**
-  * Permite descartar imagenes cuya similitud este por debajo del umbral establecido (0% a 35%), evitando falsos positivos irrelevantes.
-* **Traduccion Automatica al Vuelo:** Deteccion y traduccion de consultas en espanol hacia ingles antes de la inferencia con CLIP para maximizar la precision semantica.
-* **Busqueda Visual Instantanea (Visual Search):** Extraccion directa de vectores precalculados al presionar "Similares" en cualquier pin, con tiempos de respuesta inferiores a 0.5 ms.
-* **Tablero de Pines Guardados y Búsquedas Recientes:**
-  * Boton de guardado interactivo por tarjeta.
-  * Tablero privado persistente en el navegador mediante `localStorage`.
-  * Menu desplegable con historial de busquedas recientes.
-* **Contenedorizacion Docker:**
-  * `Dockerfile` optimizado sobre `python:3.11-slim` con soporte para OpenMP y FAISS en Linux.
-  * `docker-compose.yml` para despliegue reproducible en un solo comando.
+La tabla `images` conserva `filename`, `split`, `caption`, `attributes` y `embedding vector(512)`. La búsqueda usa `embedding <=> query` en PostgreSQL y transforma distancia coseno a similitud `1 - distancia`. FAISS se utiliza solamente como fuente de migración para los primeros 5 000 vectores; las consultas del servidor no usan FAISS ni SQLite. Las siguientes imágenes se procesan por lotes y se insertan de forma incremental. Volver a correr `indexar.py` no recalcula imágenes ya guardadas.
 
----
+Para ampliar COCO a otro tamaño (por ejemplo 20 000), ejecuta `python ampliar_dataset.py --target 20000`, `python preparar_metadata.py` y `python indexar.py`. Los embeddings anteriores permanecen en PostgreSQL y el índice HNSW se mantiene con las inserciones. Vuelve a ejecutar los benchmarks para medir el nuevo tamaño; los resultados de 10 000 no predicen automáticamente la latencia a cualquier escala.
 
-## 2. Opciones de Ejecucion
+El traductor español-inglés usa MarianMT en el mismo proceso, con modelo `Helsinki-NLP/opus-mt-es-en` almacenado en caché. La detección combina un vocabulario breve para consultas cortas con `langdetect`. Una consulta inglesa pasa directo a CLIP.
 
-### Opcion A: Ejecucion con Docker (Recomendada para despliegue rapido)
+## Preparación local
 
-Requisitos: Tener instalado Docker y Docker Compose.
+Desde esta carpeta `Final`:
 
-1. **Construir e iniciar el contenedor:**
-   ```bash
-   docker compose up --build
-   ```
+```powershell
+python -m venv ..\.venv
+..\.venv\Scripts\python.exe -m pip install -r requirements.txt
+docker compose up -d db
+..\.venv\Scripts\python.exe descargar_dataset.py
+..\.venv\Scripts\python.exe ampliar_dataset.py --target 10000
+..\.venv\Scripts\python.exe preparar_metadata.py
+..\.venv\Scripts\python.exe indexar.py
+..\.venv\Scripts\python.exe -m uvicorn app:app --host 127.0.0.1 --port 8000
+```
 
-2. **Abrir la aplicacion:**
-   Navegar en el navegador a: [http://localhost:8000](http://localhost:8000)
+Abre [http://localhost:8000](http://localhost:8000). La base está publicada solo en `127.0.0.1:5433`; para cambiar la contraseña, establece `POSTGRES_PASSWORD` en Compose y `DATABASE_URL` en el proceso Python. El volumen `postgres_data` conserva la base entre reinicios. Para usar la aplicación en Docker, después de completar la indexación ejecuta `docker compose up -d --build pinsearch`. El contenedor necesita acceso a los modelos CLIP y MarianMT la primera vez.
 
-3. **Detener el servicio:**
-   ```bash
-   docker compose down
-   ```
+## API y medidas
 
----
+- `GET /api/info`: cantidad de imágenes, modelo y motor de búsqueda.
+- `GET /api/buscar/texto?q=un gato durmiendo&modo=hnsw&familia=animales`: consulta textual y filtro opcional.
+- `POST /api/buscar/imagen`: foto cargada por el usuario.
+- `GET /api/buscar/similar?id=...`: usa el embedding persistido de una foto.
+- `POST /api/buscar/compuesta`: combinación ponderada de foto y texto.
+- `modo=flat` sirve como referencia exacta; `modo=hnsw` consulta el índice aproximado.
 
-### Opcion B: Ejecucion Local con Python
+```powershell
+..\.venv\Scripts\python.exe benchmark.py --queries 50
+..\.venv\Scripts\python.exe evaluar.py --muestra 1000
+..\.venv\Scripts\python.exe carga.py --requests 24 --concurrency 1 4 8
+```
 
-Requisitos: Python 3.10 o superior (compatible con 3.11 y 3.12).
-
-1. **Crear y activar el entorno virtual:**
-   * En Windows (PowerShell):
-     ```powershell
-     python -m venv .venv
-     .\.venv\Scripts\Activate.ps1
-     ```
-   * En Linux o macOS:
-     ```bash
-     python3 -m venv .venv
-     source .venv/bin/activate
-     ```
-
-2. **Instalar dependencias:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Descargar imagenes del dataset (si no estan descargadas):**
-   ```bash
-   python descargar_dataset.py
-   ```
-
-4. **Agregar nuevas imagenes a los indices Flat, HNSW y SQLite:**
-   ```bash
-   python indexar.py
-   ```
-   Si no hay imagenes nuevas, no carga CLIP ni recalcula embeddings. Para reconstruir todo deliberadamente: `python indexar.py --rebuild`. Reinicia el servidor despues de indexar para que cargue los nuevos indices.
-
-5. **Iniciar el servidor web FastAPI:**
-   ```bash
-   uvicorn app:app --reload --port 8000
-   ```
-   Abrir en el navegador: [http://localhost:8000](http://localhost:8000)
-
----
-
-## 3. Modalidades de Busqueda Disponibles
-
-1. **Busqueda por Texto (Text-to-Image):**
-   Ingresa descripciones en espanol o ingles. Ejemplo: `un gato durmiendo`, `sports car on road`, `pizza artesanal`.
-
-2. **Busqueda por Imagen (Image-to-Image):**
-   Arrastra o selecciona una foto desde tu computadora para ver su vista previa y encontrar imagenes con atributos visuales afines.
-
-3. **Busqueda Compuesta (Composed Image Retrieval - CIR):**
-   Combina una foto con una instruccion textual (por ejemplo, subir un gato y escribir `en la nieve` o `de noche`). El sistema fusiona ambos vectores en el espacio de CLIP respetando el balance de peso seleccionado.
-
-4. **Visual Search Directo:**
-   Pulsa "Similares" en cualquier pin para navegar por imagenes analogas con tiempo de respuesta en submilisegundos.
-
-5. **Pines Guardados:**
-   Haz clic en "Guardar" para coleccionar tus imagenes favoritas en tu tablero personal.
-
----
-
-## 4. Evaluacion y Benchmarking
-
-* **Evaluacion de Recuperacion (Information Retrieval):**
-  ```bash
-  python evaluar.py --muestra 1000
-  ```
-  Calcula Recall@1, Recall@5, Recall@10 y MRR@10 sobre los captions oficiales de COCO. `reportes/resultados_evaluacion.json` guarda la muestra, fecha y SHA-256 del indice, mapeo y captions. Si no cambiaron, la siguiente ejecucion reutiliza las metricas sin cargar CLIP. Usa `--force` para recalcular.
-
-* **Benchmark de Escalabilidad:**
-  ```bash
-  python benchmark.py
-  ```
-  Genera la comparativa de latencias entre Flat y HNSW hasta 500,000 vectores sinteticos. Guarda `reportes/resultados_benchmark.json` con fecha UTC, configuracion y SHA-256 del indice de origen, ademas de `reportes/benchmark_latencia.png`. Si la configuracion y el indice no cambiaron, reutiliza el JSON sin recalcular. Usa `python benchmark.py --force` para una medicion nueva. Para una prueba rapida: `python benchmark.py --sizes 10000 --queries 20 --output data/resultados_rapido.json --plot data/benchmark_rapido.png`.
-
-* **Prueba de carga del servicio HTTP:** con el servidor activo, ejecuta `python carga.py`. Guarda `reportes/resultados_carga.json` con throughput, p50 y p95 para 1, 4 y 8 solicitudes simultaneas. Reutiliza el reporte si el codigo, indice y parametros no cambiaron; usa `python carga.py --force` para volver a medir en otro momento.
-
-## 5. Persistencia y crecimiento
-
-* Los archivos `data/index.faiss`, `data/index_hnsw.faiss`, `data/archivos.json` y `data/catalogo.sqlite3` forman el estado local de busqueda. La carpeta `data/` esta excluida de Git y se monta como volumen persistente en Docker.
-* Para ampliar el conjunto, copia las imagenes nuevas a `imagenes/`, ejecuta `python indexar.py` con el servidor detenido y vuelve a iniciarlo. Los vectores anteriores se reutilizan. No sustituyas ni reordenes manualmente `data/archivos.json`: sus posiciones deben coincidir con FAISS y SQLite.
-* En Docker, usa `docker compose stop pinsearch`, `docker compose run --rm pinsearch python indexar.py` y `docker compose up -d pinsearch`. La cache de CLIP tambien persiste dentro de `data/` para no descargar el modelo en cada contenedor nuevo.
-* `resultados_benchmark.json` mide la busqueda del indice con vectores sinteticos derivados de COCO. No incluye inferencia CLIP, HTTP ni concurrencia; esos tiempos deben medirse por separado al evaluar el servicio completo.
+Los JSON de `reportes/*_pgvector.json` y `resultados_carga.json` incluyen la configuración y se reutilizan mientras el estado de la base y los parámetros no cambien. Usa `--force` para repetir. Los reportes FAISS anteriores documentan v3 y **no miden el motor PostgreSQL actual**.

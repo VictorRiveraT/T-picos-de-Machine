@@ -4,7 +4,6 @@ import time
 from functools import lru_cache
 from typing import Optional
 
-import faiss
 import numpy as np
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,18 +11,17 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
-# Asegurar que el directorio de trabajo sea la carpeta Final para evitar problemas
-# con caracteres especiales (como acentos en 'Tópicos') en las librerías C++ de FAISS
+# Los recursos locales se resuelven desde la carpeta Final.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(BASE_DIR)
 
 from embeddings import DEVICE, MODEL_NAME, embed_imagenes, embed_texto, traducir_a_ingles
-from catalogo import DATA_DIR, HNSW_PATH, INDEX_PATH, ensure_catalog, ensure_data_files
+from catalogo import ensure_catalog
 
 app = FastAPI(
     title="PinSearch - Buscador Multimodal de Imágenes",
-    description="Motor de búsqueda multimodal de alta escalabilidad con CLIP, FAISS y Composed Image Retrieval (CIR)",
-    version="3.0.0",
+    description="Motor multimodal con CLIP, PostgreSQL, pgvector y CIR",
+    version="4.1.0",
 )
 
 # Habilitar CORS
@@ -35,32 +33,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 1. Cargar índice exacto (Flat)
-ensure_data_files()
-if not INDEX_PATH.exists():
-    raise RuntimeError("No se encontró index.faiss. Ejecuta 'python indexar.py' primero.")
-
-index_flat = faiss.read_index(str(INDEX_PATH))
-catalogo = ensure_catalog(index_flat.ntotal)
-
-# 2. Cargar el índice escalable persistente; sólo se construye la primera vez.
-DATA_DIR.mkdir(parents=True, exist_ok=True)
-if HNSW_PATH.exists():
-    index_hnsw = faiss.read_index(str(HNSW_PATH))
-elif os.path.exists("index_hnsw.faiss"):
-    index_hnsw = faiss.read_index("index_hnsw.faiss")
-    faiss.write_index(index_hnsw, str(HNSW_PATH))
-else:
-    index_hnsw = None
-
-if index_hnsw is None or index_hnsw.ntotal != index_flat.ntotal:
-    print("Construyendo índice HNSW persistente desde Flat...")
-    vectores = index_flat.reconstruct_n(0, index_flat.ntotal)
-    index_hnsw = faiss.IndexHNSWFlat(vectores.shape[1], 32, faiss.METRIC_INNER_PRODUCT)
-    index_hnsw.hnsw.efConstruction = 100
-    index_hnsw.add(vectores)
-    faiss.write_index(index_hnsw, str(HNSW_PATH))
-index_hnsw.hnsw.efSearch = 64
+catalogo = ensure_catalog()
 
 
 @lru_cache(maxsize=2048)
@@ -69,33 +42,14 @@ def _vector_texto(texto):
     return embed_texto([texto])
 
 
-def _buscar(vector, k: int = 6, modo: str = "hnsw", excluir_nombre: str = None, umbral_min: float = 0.0):
-    """Búsqueda vectorial en el índice seleccionado midiendo la latencia exacta y filtrando por umbral."""
-    indice = index_hnsw if modo.lower() == "hnsw" else index_flat
-
-    # Solicitamos un margen mayor si hay filtrado por umbral o exclusión
-    k_solicitado = min(indice.ntotal, max(k * 3 if umbral_min > 0 else k + 1, k))
-
+def _buscar(vector, k: int = 6, modo: str = "hnsw", excluir_nombre: str = None, umbral_min: float = 0.0, familia: str = None):
     t0 = time.perf_counter()
-    scores, ids = indice.search(vector, k_solicitado)
+    rows = catalogo.search(vector, k=k, mode=modo, exclude=excluir_nombre, threshold=umbral_min, family=familia)
     latencia_ms = (time.perf_counter() - t0) * 1000
-    metadatos = catalogo.get_by_ids(ids[0])
-
     resultados = []
-    for s, i in zip(scores[0], ids[0]):
-        if i == -1:
-            continue
-        item = metadatos.get(int(i))
-        if item is None:
-            raise RuntimeError("El índice y el catálogo no coinciden. Ejecuta python indexar.py --rebuild.")
+    for item in rows:
         nombre = item["filename"]
-        if excluir_nombre and nombre == excluir_nombre:
-            continue
-        score_val = round(float(s), 4)
-
-        # Filtro de umbral mínimo de similitud de coseno
-        if umbral_min > 0 and score_val < umbral_min:
-            continue
+        score_val = round(item["score"], 4)
 
         pct = round(max(0.0, min(100.0, score_val * 100)), 1)
         caption = item["caption"] or f"Fotografía COCO ({nombre})"
@@ -105,6 +59,7 @@ def _buscar(vector, k: int = 6, modo: str = "hnsw", excluir_nombre: str = None, 
             "score": score_val,
             "porcentaje": pct,
             "caption": caption,
+            "atributos": item["attributes"],
         })
         if len(resultados) >= k:
             break
@@ -118,7 +73,8 @@ def info_sistema():
     return {
         "nombre": "PinSearch - Buscador Multimodal CLIP con CIR y Docker",
         "total_imagenes": catalogo.count(),
-        "dimension_embedding": index_flat.d,
+        "dimension_embedding": 512,
+        "base_datos": "PostgreSQL + pgvector",
         "dispositivo": DEVICE,
         "modelo": MODEL_NAME,
         "indices": ["hnsw", "flat"],
@@ -134,6 +90,7 @@ def buscar_texto(
     modo: str = Query("hnsw", pattern="^(hnsw|flat)$"),
     traducir: bool = Query(True, description="Traducir automáticamente si la consulta está en español"),
     umbral: float = Query(0.0, ge=0.0, le=1.0, description="Umbral mínimo de similitud (0.0 a 1.0)"),
+    familia: Optional[str] = Query(None, pattern="^(personas|vehiculos|animales|comida|muebles|electronica)$"),
 ):
     """Búsqueda multimodal texto a imagen (Text-to-Image)."""
     q_limpio = q.strip()
@@ -148,8 +105,8 @@ def buscar_texto(
     # Vectorización con CLIP
     vector = _vector_texto(q_procesado)
 
-    # Búsqueda en FAISS
-    resultados, latencia_indice_ms = _buscar(vector, k=k, modo=modo, umbral_min=umbral)
+    # Búsqueda vectorial en PostgreSQL
+    resultados, latencia_indice_ms = _buscar(vector, k=k, modo=modo, umbral_min=umbral, familia=familia)
     tiempo_total_ms = (time.perf_counter() - t_inicio_total) * 1000
 
     return {
@@ -187,7 +144,7 @@ def buscar_imagen(
     # Vectorización con CLIP
     vector = embed_imagenes([img])
 
-    # Búsqueda en FAISS
+    # Búsqueda vectorial en PostgreSQL
     resultados, latencia_indice_ms = _buscar(vector, k=k, modo=modo, umbral_min=umbral)
     tiempo_total_ms = (time.perf_counter() - t_inicio_total) * 1000
 
@@ -216,12 +173,9 @@ def buscar_similar(
         raise HTTPException(status_code=404, detail=f"La imagen {id} no se encuentra en el índice")
 
     t_inicio_total = time.perf_counter()
-    pos = origen["faiss_id"]
+    vector = origen["embedding"].reshape(1, -1)
 
-    # Reconstrucción instantánea del embedding precalculado
-    vector = index_flat.reconstruct(pos).reshape(1, -1)
-
-    # Búsqueda en FAISS excluyendo la propia imagen
+    # Búsqueda vectorial excluyendo la propia imagen
     resultados, latencia_indice_ms = _buscar(vector, k=k, modo=modo, excluir_nombre=id, umbral_min=umbral)
     tiempo_total_ms = (time.perf_counter() - t_inicio_total) * 1000
 
@@ -256,8 +210,7 @@ def buscar_compuesta(
     # 1. Obtener vector de imagen (desde id existente o archivo subido)
     imagen_catalogo = catalogo.get_by_filename(id_imagen) if id_imagen else None
     if imagen_catalogo is not None:
-        pos = imagen_catalogo["faiss_id"]
-        v_img = index_flat.reconstruct(pos).reshape(1, -1)
+        v_img = imagen_catalogo["embedding"].reshape(1, -1)
         origen_desc = f"Pin {id_imagen}"
         excluir = id_imagen
     elif archivo and archivo.filename:
@@ -288,7 +241,7 @@ def buscar_compuesta(
     norma = np.linalg.norm(v_comp, axis=1, keepdims=True)
     v_comp = (v_comp / np.maximum(norma, 1e-12)).astype("float32")
 
-    # 5. Búsqueda en FAISS
+    # 5. Búsqueda vectorial en PostgreSQL
     resultados, latencia_indice_ms = _buscar(v_comp, k=k, modo=modo, excluir_nombre=excluir, umbral_min=umbral)
     tiempo_total_ms = (time.perf_counter() - t_inicio_total) * 1000
 

@@ -12,7 +12,7 @@ import time
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
-from catalogo import INDEX_PATH, ensure_data_files
+from catalogo import connect
 
 
 SCHEMA_VERSION = 1
@@ -37,7 +37,6 @@ def percentile(sorted_values, fraction):
 
 
 def ejecutar(args):
-    ensure_data_files()
     if args.requests < 1 or not args.concurrency or any(n < 1 for n in args.concurrency):
         raise ValueError("Solicitudes y niveles de concurrencia deben ser positivos.")
     base_url = args.url.rstrip("/")
@@ -49,9 +48,11 @@ def ejecutar(args):
         "translation": False,
         "query_pattern": "frases en inglés con sufijo único por ejecución para evitar la caché de CLIP",
     }
+    with connect() as conn:
+        db_snapshot = conn.execute("SELECT count(*), max(id) FROM images").fetchone()
     source_hashes = {
         "app_sha256": sha256_file(Path("app.py")),
-        "index_sha256": sha256_file(INDEX_PATH),
+        "database_snapshot": list(db_snapshot),
         "load_script_sha256": sha256_file(Path(__file__)),
     }
     if args.output.exists() and not args.force:
@@ -114,7 +115,7 @@ def ejecutar(args):
         "schema_version": SCHEMA_VERSION,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "query_nonce": run_nonce,
-        "methodology": "HTTP texto-a-imagen con consultas únicas; incluye inferencia CLIP, SQLite y FAISS HNSW. Es una prueba local, no una garantía de producción.",
+        "methodology": "HTTP texto-a-imagen con consultas únicas; incluye inferencia CLIP y búsqueda pgvector HNSW. Prueba local.",
         "source_hashes": source_hashes,
         "config": config,
         "results": results,

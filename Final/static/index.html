@@ -1019,7 +1019,7 @@
 
       <!-- FILTROS: INDICE, UMBRAL Y CANTIDAD K -->
       <div class="controls">
-        <div class="select-pill" title="Algoritmo de búsqueda vectorial FAISS">
+        <div class="select-pill" title="Búsqueda vectorial PostgreSQL + pgvector">
           <span id="label-indice">⚡ HNSW</span>
           <select id="select-indice" onchange="actualizarIndiceUI()">
             <option value="hnsw" selected>HNSW (Aproximado / Escalable)</option>
@@ -1667,7 +1667,7 @@
       statusBar.style.display = 'flex';
       document.getElementById('status-counts').textContent = `${data.resultados.length} pines encontrados`;
       document.getElementById('status-latencia').textContent = `${data.tiempo_total_ms} ms (índice: ${data.tiempo_indice_ms} ms)`;
-      document.getElementById('status-modo-desc').textContent = `Algoritmo: FAISS ${data.modo.toUpperCase()}`;
+      document.getElementById('status-modo-desc').textContent = `PostgreSQL pgvector: ${data.modo.toUpperCase()}`;
 
       const transEl = document.getElementById('status-translation');
       if (data.traducido && data.query_procesada) {

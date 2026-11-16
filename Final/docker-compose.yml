@@ -1,4 +1,21 @@
 services:
+  db:
+    image: pgvector/pgvector:0.8.7-pg17
+    environment:
+      POSTGRES_USER: pinsearch
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pinsearch_dev}
+      POSTGRES_DB: pinsearch
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pinsearch -d pinsearch"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
   pinsearch:
     build:
       context: .
@@ -14,4 +31,11 @@ services:
       - PORT=8000
       - PYTHONUNBUFFERED=1
       - HF_HOME=/app/data/hf_cache
+      - DATABASE_URL=postgresql://pinsearch:${POSTGRES_PASSWORD:-pinsearch_dev}@db:5432/pinsearch
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -8,3 +8,9 @@ python-multipart
 pillow
 numpy
 matplotlib
+psycopg[binary,pool]>=3.2,<4
+pgvector>=0.4,<1
+sentencepiece
+sacremoses
+langdetect
+ijson

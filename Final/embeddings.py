@@ -1,13 +1,15 @@
-import json
 from functools import lru_cache
-import urllib.parse
-import urllib.request
+import re
 
 import torch
-from transformers import CLIPModel, CLIPProcessor
+from langdetect import DetectorFactory, detect
+from transformers import CLIPModel, CLIPProcessor, MarianMTModel, MarianTokenizer
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 MODEL_NAME = "openai/clip-vit-base-patch32"
+TRANSLATOR_NAME = "Helsinki-NLP/opus-mt-es-en"
+DetectorFactory.seed = 0
+SPANISH_WORDS = {"un", "una", "unos", "unas", "el", "la", "los", "las", "de", "del", "con", "en", "sobre", "para", "gato", "gatos", "perro", "perros", "durmiendo", "bicicleta", "roja", "rojo", "nieve", "avion", "aviones", "coche", "coches", "auto", "autos", "playa", "taza", "cafe", "persona", "personas", "niño", "niña", "comiendo", "jugando", "volando", "corriendo", "buscando", "imagen", "imagenes", "similar", "similares"}
 
 model = CLIPModel.from_pretrained(MODEL_NAME).to(DEVICE).eval()
 processor = CLIPProcessor.from_pretrained(MODEL_NAME)
@@ -34,20 +36,26 @@ def embed_texto(textos):
 
 @lru_cache(maxsize=4096)
 def traducir_a_ingles(texto: str) -> str:
-    """Traduce la consulta a inglés si el usuario escribe en español u otro idioma.
-    Si falla la conexión o ya está en inglés, retorna el texto original de forma segura."""
+    """Traducción local español-inglés; inglés pasa directamente a CLIP."""
     texto = texto.strip()
     if not texto:
         return texto
+    words = set(re.findall(r"[a-záéíóúñ]+", texto.lower()))
     try:
-        url = (
-            "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q="
-            + urllib.parse.quote(texto)
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=2.5) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            traducido = "".join([part[0] for part in data[0] if part[0]]).strip()
-            return traducido if traducido else texto
+        spanish = bool(words & SPANISH_WORDS) or detect(texto) == "es"
     except Exception:
+        spanish = False
+    if not spanish:
         return texto
+    tokenizer, translator = _translator()
+    inputs = tokenizer(texto, return_tensors="pt", truncation=True, max_length=128)
+    with torch.no_grad():
+        output = translator.generate(**inputs, max_new_tokens=128)
+    return tokenizer.batch_decode(output, skip_special_tokens=True)[0].strip()
+
+
+@lru_cache(maxsize=1)
+def _translator():
+    tokenizer = MarianTokenizer.from_pretrained(TRANSLATOR_NAME)
+    translator = MarianMTModel.from_pretrained(TRANSLATOR_NAME).eval()
+    return tokenizer, translator

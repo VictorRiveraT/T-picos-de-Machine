@@ -1,11 +1,15 @@
-# Reportes de la versión 4
+# Reportes de PinSearch
 
-Estos son resultados medidos localmente con 5 000 imágenes COCO y CLIP en CPU. Cada JSON incluye fecha UTC, configuración y huellas de las entradas para verificar cuándo debe repetirse la medición.
+## Versión actual: PostgreSQL + pgvector, 10 000 imágenes COCO
 
-| Archivo | Qué mide | Comando para reproducir |
+| Archivo | Medición | Repetición |
 | --- | --- | --- |
-| `resultados_benchmark.json` | Latencia de FAISS Flat y HNSW con 10 000, 100 000 y 500 000 vectores sintéticos; 200 consultas por tamaño. | `python benchmark.py --force` |
-| `resultados_evaluacion.json` | Recall@1/5/10 y MRR@10 en una muestra fija de 1 000 captions COCO. | `python evaluar.py --muestra 1000 --force` |
-| `resultados_carga.json` | Rendimiento HTTP texto a imagen con 24 consultas únicas y concurrencia 1, 4 y 8. | `python carga.py --force` |
+| `resultados_benchmark_pgvector.json` | 50 consultas reales, HNSW frente a búsqueda exacta, latencia SQL y Recall@10 de HNSW | `python benchmark.py --queries 50 --force` |
+| `resultados_evaluacion_pgvector.json` | Recuperación texto a imagen con 1 000 captions COCO: Recall@1/5/10 y MRR@10 | `python evaluar.py --muestra 1000 --force` |
+| `resultados_carga.json` | API HTTP con 24 consultas distintas y concurrencia 1, 4 y 8 | `python carga.py --force` |
 
-El benchmark FAISS no incluye inferencia ni red. La prueba HTTP es breve y depende de la máquina y la carga del momento. Estas cifras no garantizan el mismo rendimiento en producción.
+Los JSON se reutilizan mientras la configuración y el estado de la base no cambien. Las mediciones son locales en CPU y no establecen una garantía de producción.
+
+## Históricos de FAISS / SQLite (5 000 imágenes)
+
+`resultados_benchmark.json`, `resultados_evaluacion.json` y `benchmark_latencia.png` corresponden al motor anterior y no describen PostgreSQL. Se conservan solo para comparación histórica.
