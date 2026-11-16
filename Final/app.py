@@ -1,7 +1,7 @@
 import io
-import json
 import os
 import time
+from functools import lru_cache
 from typing import Optional
 
 import faiss
@@ -18,6 +18,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(BASE_DIR)
 
 from embeddings import DEVICE, MODEL_NAME, embed_imagenes, embed_texto, traducir_a_ingles
+from catalogo import DATA_DIR, HNSW_PATH, INDEX_PATH, ensure_catalog, ensure_data_files
 
 app = FastAPI(
     title="PinSearch - Buscador Multimodal de Imágenes",
@@ -34,47 +35,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 1. Cargar metadatos de archivos
-if not os.path.exists("archivos.json"):
-    raise RuntimeError("No se encontró archivos.json. Ejecuta 'python indexar.py' primero.")
-
-with open("archivos.json", "r", encoding="utf-8") as f:
-    archivos = json.load(f)
-
-archivos_pos = {nombre: i for i, nombre in enumerate(archivos)}
-
-# 2. Cargar índice exacto (Flat)
-if not os.path.exists("index.faiss"):
+# 1. Cargar índice exacto (Flat)
+ensure_data_files()
+if not INDEX_PATH.exists():
     raise RuntimeError("No se encontró index.faiss. Ejecuta 'python indexar.py' primero.")
 
-index_flat = faiss.read_index("index.faiss")
+index_flat = faiss.read_index(str(INDEX_PATH))
+catalogo = ensure_catalog(index_flat.ntotal)
 
-# 3. Cargar o construir índice escalable (HNSW)
-if os.path.exists("index_hnsw.faiss"):
+# 2. Cargar el índice escalable persistente; sólo se construye la primera vez.
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+if HNSW_PATH.exists():
+    index_hnsw = faiss.read_index(str(HNSW_PATH))
+elif os.path.exists("index_hnsw.faiss"):
     index_hnsw = faiss.read_index("index_hnsw.faiss")
-    index_hnsw.hnsw.efSearch = 64
+    faiss.write_index(index_hnsw, str(HNSW_PATH))
 else:
-    print("Construyendo índice HNSW en memoria desde Flat...")
+    index_hnsw = None
+
+if index_hnsw is None or index_hnsw.ntotal != index_flat.ntotal:
+    print("Construyendo índice HNSW persistente desde Flat...")
     vectores = index_flat.reconstruct_n(0, index_flat.ntotal)
     index_hnsw = faiss.IndexHNSWFlat(vectores.shape[1], 32, faiss.METRIC_INNER_PRODUCT)
     index_hnsw.hnsw.efConstruction = 100
     index_hnsw.add(vectores)
-    index_hnsw.hnsw.efSearch = 64
-    faiss.write_index(index_hnsw, "index_hnsw.faiss")
+    faiss.write_index(index_hnsw, str(HNSW_PATH))
+index_hnsw.hnsw.efSearch = 64
 
-# 4. Cargar descripciones/captions si existen
-captions_map = {}
-captions_path = os.path.join("anotaciones", "captions_val2017.json")
-if os.path.exists(captions_path):
-    try:
-        with open(captions_path, "r", encoding="utf-8") as f:
-            datos_coco = json.load(f)
-        for a in datos_coco.get("annotations", []):
-            nombre = f"{a['image_id']:012d}.jpg"
-            if nombre not in captions_map:
-                captions_map[nombre] = a.get("caption", "").strip()
-    except Exception as e:
-        print(f"Aviso al cargar captions: {e}")
+
+@lru_cache(maxsize=2048)
+def _vector_texto(texto):
+    """Evita repetir la inferencia CLIP para consultas textuales frecuentes."""
+    return embed_texto([texto])
 
 
 def _buscar(vector, k: int = 6, modo: str = "hnsw", excluir_nombre: str = None, umbral_min: float = 0.0):
@@ -87,12 +79,16 @@ def _buscar(vector, k: int = 6, modo: str = "hnsw", excluir_nombre: str = None, 
     t0 = time.perf_counter()
     scores, ids = indice.search(vector, k_solicitado)
     latencia_ms = (time.perf_counter() - t0) * 1000
+    metadatos = catalogo.get_by_ids(ids[0])
 
     resultados = []
     for s, i in zip(scores[0], ids[0]):
         if i == -1:
             continue
-        nombre = archivos[i]
+        item = metadatos.get(int(i))
+        if item is None:
+            raise RuntimeError("El índice y el catálogo no coinciden. Ejecuta python indexar.py --rebuild.")
+        nombre = item["filename"]
         if excluir_nombre and nombre == excluir_nombre:
             continue
         score_val = round(float(s), 4)
@@ -102,7 +98,7 @@ def _buscar(vector, k: int = 6, modo: str = "hnsw", excluir_nombre: str = None, 
             continue
 
         pct = round(max(0.0, min(100.0, score_val * 100)), 1)
-        caption = captions_map.get(nombre, f"Fotografía COCO ({nombre})")
+        caption = item["caption"] or f"Fotografía COCO ({nombre})"
         resultados.append({
             "id": nombre,
             "url": f"/imagenes/{nombre}",
@@ -121,7 +117,7 @@ def info_sistema():
     """Información del sistema, modelo e índices disponibles."""
     return {
         "nombre": "PinSearch - Buscador Multimodal CLIP con CIR y Docker",
-        "total_imagenes": len(archivos),
+        "total_imagenes": catalogo.count(),
         "dimension_embedding": index_flat.d,
         "dispositivo": DEVICE,
         "modelo": MODEL_NAME,
@@ -150,7 +146,7 @@ def buscar_texto(
     q_procesado = traducir_a_ingles(q_limpio) if traducir else q_limpio
 
     # Vectorización con CLIP
-    vector = embed_texto([q_procesado])
+    vector = _vector_texto(q_procesado)
 
     # Búsqueda en FAISS
     resultados, latencia_indice_ms = _buscar(vector, k=k, modo=modo, umbral_min=umbral)
@@ -215,11 +211,12 @@ def buscar_similar(
     umbral: float = Query(0.0, ge=0.0, le=1.0),
 ):
     """Búsqueda visual instantánea a partir de una imagen ya indexada (Visual Search estilo Pinterest)."""
-    if id not in archivos_pos:
+    origen = catalogo.get_by_filename(id)
+    if origen is None:
         raise HTTPException(status_code=404, detail=f"La imagen {id} no se encuentra en el índice")
 
     t_inicio_total = time.perf_counter()
-    pos = archivos_pos[id]
+    pos = origen["faiss_id"]
 
     # Reconstrucción instantánea del embedding precalculado
     vector = index_flat.reconstruct(pos).reshape(1, -1)
@@ -230,7 +227,7 @@ def buscar_similar(
 
     return {
         "imagen_origen": id,
-        "caption_origen": captions_map.get(id, id),
+        "caption_origen": origen["caption"] or id,
         "modo": modo,
         "k": k,
         "umbral": umbral,
@@ -257,8 +254,9 @@ def buscar_compuesta(
     t_inicio_total = time.perf_counter()
 
     # 1. Obtener vector de imagen (desde id existente o archivo subido)
-    if id_imagen and id_imagen in archivos_pos:
-        pos = archivos_pos[id_imagen]
+    imagen_catalogo = catalogo.get_by_filename(id_imagen) if id_imagen else None
+    if imagen_catalogo is not None:
+        pos = imagen_catalogo["faiss_id"]
         v_img = index_flat.reconstruct(pos).reshape(1, -1)
         origen_desc = f"Pin {id_imagen}"
         excluir = id_imagen
@@ -282,7 +280,7 @@ def buscar_compuesta(
     mod_procesado = traducir_a_ingles(mod_limpio)
 
     # 3. Vector de texto modificador con CLIP
-    v_text = embed_texto([mod_procesado])
+    v_text = _vector_texto(mod_procesado)
 
     # 4. Composición de vectores en el espacio latente de CLIP
     alpha = float(peso_imagen)

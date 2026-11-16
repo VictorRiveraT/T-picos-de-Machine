@@ -32,4 +32,6 @@ Final/annotations/
 Final/resultados_*.json
 Final/benchmark_latencia.png
 Final/index_hnsw.faiss
+Final/data/
+Final/*.pending
 

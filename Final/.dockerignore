@@ -10,3 +10,6 @@ descargas/
 *.tar.gz
 resultados_*.json
 benchmark_latencia.png
+data/
+*.pending
+imagenes/

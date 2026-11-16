@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-11-16T19:03:59.168446+00:00",
+  "query_nonce": 1794855837355736000,
+  "methodology": "HTTP texto-a-imagen con consultas únicas; incluye inferencia CLIP, SQLite y FAISS HNSW. Es una prueba local, no una garantía de producción.",
+  "source_hashes": {
+    "app_sha256": "a700017fd7fa1f64768ca73e2e1a8dfcfc1d00fec28aa8121bb07343bfaf3f8b",
+    "index_sha256": "c76811b4c71bfb38c91f59e063c25f6295169ae26be23afd6e302af133034e30",
+    "load_script_sha256": "56d35c5192d4eb2d0c655d7492d14343772bb6252ca9ce11891600c4117b5059"
+  },
+  "config": {
+    "url": "http://127.0.0.1:8000",
+    "requests_per_level": 24,
+    "concurrency": [
+      1,
+      4,
+      8
+    ],
+    "mode": "hnsw",
+    "translation": false,
+    "query_pattern": "frases en inglés con sufijo único por ejecución para evitar la caché de CLIP"
+  },
+  "results": [
+    {
+      "concurrency": 1,
+      "requests": 24,
+      "successful": 24,
+      "failed": 0,
+      "wall_seconds": 0.931,
+      "throughput_rps": 25.77,
+      "p50_ms": 32.53,
+      "p95_ms": 54.63,
+      "errors": []
+    },
+    {
+      "concurrency": 4,
+      "requests": 24,
+      "successful": 24,
+      "failed": 0,
+      "wall_seconds": 0.39,
+      "throughput_rps": 61.61,
+      "p50_ms": 61.82,
+      "p95_ms": 76.45,
+      "errors": []
+    },
+    {
+      "concurrency": 8,
+      "requests": 24,
+      "successful": 24,
+      "failed": 0,
+      "wall_seconds": 0.492,
+      "throughput_rps": 48.83,
+      "p50_ms": 157.68,
+      "p95_ms": 175.75,
+      "errors": []
+    }
+  ]
+}

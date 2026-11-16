@@ -1,4 +1,5 @@
 import json
+from functools import lru_cache
 import urllib.parse
 import urllib.request
 
@@ -31,6 +32,7 @@ def embed_texto(textos):
     return _normalizar(model.get_text_features(**inputs))
 
 
+@lru_cache(maxsize=4096)
 def traducir_a_ingles(texto: str) -> str:
     """Traduce la consulta a inglés si el usuario escribe en español u otro idioma.
     Si falla la conexión o ya está en inglés, retorna el texto original de forma segura."""

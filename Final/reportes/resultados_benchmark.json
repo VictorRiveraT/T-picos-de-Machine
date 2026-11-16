@@ -1,0 +1,49 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-11-16T18:48:36.268463+00:00",
+  "source_index_sha256": "c76811b4c71bfb38c91f59e063c25f6295169ae26be23afd6e302af133034e30",
+  "methodology": "Vectores sintéticos derivados de embeddings reales; latencia del índice, sin inferencia ni HTTP.",
+  "config": {
+    "sizes": [
+      10000,
+      100000,
+      500000
+    ],
+    "queries": 200,
+    "k": 10,
+    "noise": 0.02,
+    "m": 32,
+    "ef_construction": 100,
+    "ef_search": 64,
+    "seed": 42
+  },
+  "results": [
+    {
+      "n": 10000,
+      "flat_build_s": 0.0,
+      "flat_latencia_ms": 1.31,
+      "hnsw_build_s": 0.54,
+      "hnsw_latencia_ms": 0.17,
+      "hnsw_recall_vs_exacto": 99.95,
+      "memoria_vectores_mb": 20.5
+    },
+    {
+      "n": 100000,
+      "flat_build_s": 0.06,
+      "flat_latencia_ms": 10.14,
+      "hnsw_build_s": 17.05,
+      "hnsw_latencia_ms": 0.2,
+      "hnsw_recall_vs_exacto": 100.0,
+      "memoria_vectores_mb": 204.8
+    },
+    {
+      "n": 500000,
+      "flat_build_s": 0.35,
+      "flat_latencia_ms": 52.86,
+      "hnsw_build_s": 102.71,
+      "hnsw_latencia_ms": 0.28,
+      "hnsw_recall_vs_exacto": 99.45,
+      "memoria_vectores_mb": 1024.0
+    }
+  ]
+}

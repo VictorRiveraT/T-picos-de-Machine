@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-11-16T18:56:28.677499+00:00",
+  "source_hashes": {
+    "index_sha256": "c76811b4c71bfb38c91f59e063c25f6295169ae26be23afd6e302af133034e30",
+    "mapping_sha256": "96ca5a10a43932242cbf43439e24de4098ba2a404808f1140cfe83811f1aed3e",
+    "captions_sha256": "afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9"
+  },
+  "config": {
+    "sample_size": 1000,
+    "seed": 42,
+    "k_values": [
+      1,
+      5,
+      10
+    ],
+    "batch": 256,
+    "model": "openai/clip-vit-base-patch32"
+  },
+  "image_count": 5000,
+  "caption_count": 1000,
+  "metrics": {
+    "Recall@1": 32.5,
+    "Recall@5": 56.3,
+    "Recall@10": 66.8,
+    "MRR@10": 0.4253
+  }
+}

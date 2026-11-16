@@ -9,9 +9,9 @@ services:
     volumes:
       - ./imagenes:/app/imagenes
       - ./anotaciones:/app/anotaciones
-      - ./index.faiss:/app/index.faiss
-      - ./archivos.json:/app/archivos.json
+      - ./data:/app/data
     environment:
       - PORT=8000
       - PYTHONUNBUFFERED=1
+      - HF_HOME=/app/data/hf_cache
     restart: unless-stopped
