@@ -1,4 +1,10 @@
-# Traductor Inglés → Español con Transformer entrenado desde cero
+# Tópicos Avanzados en Machine Learning (2026-II)
+
+## Proyecto final: PinSearch
+
+El proyecto final está en [Final/](Final/README.md): buscador de imágenes COCO por texto e imagen con CLIP, PostgreSQL + pgvector y una interfaz adaptable a móvil. El conjunto evaluado contiene 20 000 imágenes. Consulta allí la instalación, el API y los reportes de calidad y escalabilidad.
+
+## Entrega parcial: Traductor Inglés → Español con Transformer entrenado desde cero
 
 Proyecto desarrollado para el curso **Tópicos Avanzados de Machine Learning** (UPCH, 2026-II).
 

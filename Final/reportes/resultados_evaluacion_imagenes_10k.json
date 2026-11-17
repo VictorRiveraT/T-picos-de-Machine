@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-11-16T23:48:31.683935+00:00",
+  "engine": "PostgreSQL pgvector HNSW",
+  "image_count": 10000,
+  "query_count": 500,
+  "cache_key": {
+    "schema": 1,
+    "count": 10000,
+    "max_id": 10000,
+    "latest": "2026-11-16T19:33:53.519765+00:00",
+    "sample": 500,
+    "seed": 42,
+    "target_frequency_range": [
+      25,
+      4000
+    ],
+    "script_sha256": "1e033870d66883d7513aa928ea9afc66dd1e5db88df07d27db3430b7f8e9ce9e"
+  },
+  "methodology": "Consultas imagen-imagen sin la propia imagen. Relevancia proxy: compartir la categoría COCO menos frecuente de la consulta (25-4000 apariciones). No es una evaluación de similitud visual juzgada por humanos.",
+  "metrics": {
+    "ObjectHit@1": 65.2,
+    "ObjectHit@5": 84.6,
+    "ObjectHit@10": 89.6,
+    "ObjectPrecision@10": 61.06,
+    "random_object_prevalence_percent": 2.57
+  },
+  "examples": [
+    {
+      "query": "000000006572.jpg",
+      "target_object": "cell phone",
+      "top_result": "000000021991.jpg",
+      "top_result_has_object": false
+    },
+    {
+      "query": "000000331604.jpg",
+      "target_object": "surfboard",
+      "top_result": "000000002001.jpg",
+      "top_result_has_object": true
+    },
+    {
+      "query": "000000110784.jpg",
+      "target_object": "bus",
+      "top_result": "000000315187.jpg",
+      "top_result_has_object": true
+    },
+    {
+      "query": "000000130826.jpg",
+      "target_object": "bench",
+      "top_result": "000000016249.jpg",
+      "top_result_has_object": true
+    },
+    {
+      "query": "000000013546.jpg",
+      "target_object": "skateboard",
+      "top_result": "000000018519.jpg",
+      "top_result_has_object": false
+    },
+    {
+      "query": "000000304812.jpg",
+      "target_object": "surfboard",
+      "top_result": "000000515445.jpg",
+      "top_result_has_object": true
+    },
+    {
+      "query": "000000519338.jpg",
+      "target_object": "train",
+      "top_result": "000000225946.jpg",
+      "top_result_has_object": true
+    },
+    {
+      "query": "000000000360.jpg",
+      "target_object": "snowboard",
+      "top_result": "000000037689.jpg",
+      "top_result_has_object": true
+    }
+  ]
+}

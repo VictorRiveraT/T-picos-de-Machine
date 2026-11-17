@@ -1,15 +1,27 @@
 # Reportes de PinSearch
 
-## Versión actual: PostgreSQL + pgvector, 10 000 imágenes COCO
+## Versión actual: PostgreSQL + pgvector, 20 000 imágenes COCO
 
-| Archivo | Medición | Repetición |
+| Archivo | Evidencia | Repetición |
 | --- | --- | --- |
-| `resultados_benchmark_pgvector.json` | 50 consultas reales, HNSW frente a búsqueda exacta, latencia SQL y Recall@10 de HNSW | `python benchmark.py --queries 50 --force` |
-| `resultados_evaluacion_pgvector.json` | Recuperación texto a imagen con 1 000 captions COCO: Recall@1/5/10 y MRR@10 | `python evaluar.py --muestra 1000 --force` |
-| `resultados_carga.json` | API HTTP con 24 consultas distintas y concurrencia 1, 4 y 8 | `python carga.py --force` |
+| `resultados_escalabilidad_pgvector.json` y `escalabilidad_pgvector.png` | 1 000, 5 000, 10 000 y 20 000 embeddings COCO reales; HNSW frente a búsqueda exacta, p50/p95, Recall@10 y tiempo de construcción | `python benchmark.py --force` |
+| `resultados_evaluacion_pgvector.json` | Recuperación texto→imagen con 1 000 captions COCO: Recall@1/5/10 y MRR@10 | `python evaluar.py --muestra 1000 --force` |
+| `resultados_evaluacion_imagenes.json` | Recuperación imagen→imagen con 500 consultas: acierto de categoría COCO en los primeros 1/5/10 | `python evaluar_imagenes.py --muestra 500 --force` |
+| `resultados_carga.json` | API HTTP con 100 consultas distintas por nivel de concurrencia 1, 4, 8 y 16 | `python carga.py --requests 100 --concurrency 1 4 8 16 --force` |
 
-Los JSON se reutilizan mientras la configuración y el estado de la base no cambien. Las mediciones son locales en CPU y no establecen una garantía de producción.
+El benchmark usa tablas temporales y verifica con `EXPLAIN` que HNSW consulte el índice y el modo exacto haga un barrido. La métrica imagen→imagen usa objetos COCO como referencia semántica parcial, no equivalencias visuales evaluadas por humanos. Las pruebas de carga son locales en CPU y no garantizan el mismo rendimiento en otro equipo. Los JSON guardan configuración y estado de la base; si no cambian, se reutilizan sin recalcular.
 
-## Históricos de FAISS / SQLite (5 000 imágenes)
+## Resultados medidos en este equipo
 
-`resultados_benchmark.json`, `resultados_evaluacion.json` y `benchmark_latencia.png` corresponden al motor anterior y no describen PostgreSQL. Se conservan solo para comparación histórica.
+| Prueba | Resultado |
+| --- | --- |
+| Búsqueda SQL, 10 000 → 20 000 imágenes | HNSW p50: 5,865 → 6,261 ms; exacta p50: 26,284 → 47,647 ms; Recall@10 de HNSW frente a la búsqueda exacta: 100 % en las 100 consultas sintéticas de cada tamaño |
+| Texto → imagen, 20 000 candidatas | Recall@10: 45,1 % con 1 000 captions COCO |
+| Imagen → imagen, 20 000 candidatas | ObjectHit@10: 90,4 % con 500 imágenes; coincidencia de categoría COCO como proxy |
+| API HTTP, 20 000 imágenes | 400/400 solicitudes correctas; a 16 solicitudes simultáneas, p95: 580,28 ms y 30,06 solicitudes/s |
+
+La comparación SQL excluye la inferencia del modelo y la API HTTP. La prueba HTTP sí las incluye. El rendimiento HTTP alcanzó su máximo medido a concurrencia 4 (38,92 solicitudes/s) y descendió a 8 y 16; esta configuración de CPU necesita más capacidad de servicio para mantener el rendimiento al aumentar las solicitudes simultáneas. Los resultados de recuperación usan referencias parciales de COCO y no implican satisfacción humana del 100 %.
+
+## Referencias históricas
+
+`resultados_evaluacion_imagenes_10k.json` y `resultados_benchmark_pgvector.json` documentan la etapa PostgreSQL de 10 000 imágenes. `resultados_benchmark.json`, `resultados_evaluacion.json` y `benchmark_latencia.png` pertenecen al motor FAISS/SQLite anterior de 5 000 imágenes. No deben mezclarse con la medición de 20 000.

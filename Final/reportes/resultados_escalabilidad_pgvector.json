@@ -1,0 +1,94 @@
+{
+  "schema_version": 3,
+  "created_at_utc": "2026-11-17T00:03:04.590794+00:00",
+  "engine": "PostgreSQL + pgvector HNSW vs exact sequential scan",
+  "methodology": "Subconjuntos temporales de embeddings COCO reales, consultas con ruido gaussiano normalizado; tiempos incluyen SQL y red local, excluyen CLIP y HTTP. Calentamiento: 5 consultas por modo.",
+  "cache_key": {
+    "schema": 3,
+    "count": 20000,
+    "max_id": 20000,
+    "latest": "2026-11-17T00:02:06.973146+00:00",
+    "sizes": [
+      1000,
+      5000,
+      10000,
+      20000
+    ],
+    "queries": 100,
+    "k": 10,
+    "noise": 0.02,
+    "seed": 42,
+    "index_settings": {
+      "m": 32,
+      "ef_construction": 100,
+      "ef_search": 100
+    },
+    "script_sha256": "427429404babbd589879062cddcaa3b7de1d71712c7e439c193aacb65cc0fb63"
+  },
+  "results": [
+    {
+      "images": 1000,
+      "queries": 100,
+      "build_s": 0.397,
+      "table_mb": 2.87,
+      "hnsw_index_mb": 2.74,
+      "exact_p50_ms": 3.931,
+      "exact_p95_ms": 4.521,
+      "hnsw_p50_ms": 4.431,
+      "hnsw_p95_ms": 4.87,
+      "hnsw_recall_at_k": 1.0,
+      "plans": {
+        "hnsw": "Index Scan using bench_images_hnsw",
+        "exact": "Seq Scan on bench_images"
+      }
+    },
+    {
+      "images": 5000,
+      "queries": 100,
+      "build_s": 2.433,
+      "table_mb": 14.43,
+      "hnsw_index_mb": 13.66,
+      "exact_p50_ms": 14.375,
+      "exact_p95_ms": 15.218,
+      "hnsw_p50_ms": 5.127,
+      "hnsw_p95_ms": 6.425,
+      "hnsw_recall_at_k": 1.0,
+      "plans": {
+        "hnsw": "Index Scan using bench_images_hnsw",
+        "exact": "Seq Scan on bench_images"
+      }
+    },
+    {
+      "images": 10000,
+      "queries": 100,
+      "build_s": 5.701,
+      "table_mb": 28.83,
+      "hnsw_index_mb": 27.32,
+      "exact_p50_ms": 26.284,
+      "exact_p95_ms": 28.104,
+      "hnsw_p50_ms": 5.865,
+      "hnsw_p95_ms": 7.761,
+      "hnsw_recall_at_k": 1.0,
+      "plans": {
+        "hnsw": "Index Scan using bench_images_hnsw",
+        "exact": "Seq Scan on bench_images"
+      }
+    },
+    {
+      "images": 20000,
+      "queries": 100,
+      "build_s": 13.036,
+      "table_mb": 57.11,
+      "hnsw_index_mb": 54.62,
+      "exact_p50_ms": 47.647,
+      "exact_p95_ms": 51.362,
+      "hnsw_p50_ms": 6.261,
+      "hnsw_p95_ms": 8.662,
+      "hnsw_recall_at_k": 1.0,
+      "plans": {
+        "hnsw": "Index Scan using bench_images_hnsw",
+        "exact": "Seq Scan on bench_images"
+      }
+    }
+  ]
+}

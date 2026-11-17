@@ -1,23 +1,24 @@
 {
   "schema_version": 1,
-  "created_at_utc": "2026-11-16T19:45:38.534289+00:00",
-  "query_nonce": 1794858334729576100,
+  "created_at_utc": "2026-11-17T00:07:00.160107+00:00",
+  "query_nonce": 1794874007436631500,
   "methodology": "HTTP texto-a-imagen con consultas únicas; incluye inferencia CLIP y búsqueda pgvector HNSW. Prueba local.",
   "source_hashes": {
     "app_sha256": "ea5f512f3e9ece35562905f34f75543742fd472214a9791dfcfdefe5ecf810ca",
     "database_snapshot": [
-      10000,
-      10000
+      20000,
+      20000
     ],
     "load_script_sha256": "956e4a559e1dedfa3b70b204b533c47b3dc345c79159f07150a695594110dfa5"
   },
   "config": {
     "url": "http://127.0.0.1:8000",
-    "requests_per_level": 24,
+    "requests_per_level": 100,
     "concurrency": [
       1,
       4,
-      8
+      8,
+      16
     ],
     "mode": "hnsw",
     "translation": false,
@@ -26,35 +27,46 @@
   "results": [
     {
       "concurrency": 1,
-      "requests": 24,
-      "successful": 24,
+      "requests": 100,
+      "successful": 100,
       "failed": 0,
-      "wall_seconds": 1.913,
-      "throughput_rps": 12.54,
-      "p50_ms": 65.7,
-      "p95_ms": 167.95,
+      "wall_seconds": 3.701,
+      "throughput_rps": 27.02,
+      "p50_ms": 31.88,
+      "p95_ms": 55.28,
       "errors": []
     },
     {
       "concurrency": 4,
-      "requests": 24,
-      "successful": 24,
+      "requests": 100,
+      "successful": 100,
       "failed": 0,
-      "wall_seconds": 1.247,
-      "throughput_rps": 19.24,
-      "p50_ms": 186.46,
-      "p95_ms": 306.04,
+      "wall_seconds": 2.569,
+      "throughput_rps": 38.92,
+      "p50_ms": 101.28,
+      "p95_ms": 115.98,
       "errors": []
     },
     {
       "concurrency": 8,
-      "requests": 24,
-      "successful": 24,
+      "requests": 100,
+      "successful": 100,
       "failed": 0,
-      "wall_seconds": 0.644,
-      "throughput_rps": 37.25,
-      "p50_ms": 205.26,
-      "p95_ms": 226.56,
+      "wall_seconds": 3.125,
+      "throughput_rps": 32.0,
+      "p50_ms": 250.29,
+      "p95_ms": 272.53,
+      "errors": []
+    },
+    {
+      "concurrency": 16,
+      "requests": 100,
+      "successful": 100,
+      "failed": 0,
+      "wall_seconds": 3.327,
+      "throughput_rps": 30.06,
+      "p50_ms": 529.57,
+      "p95_ms": 580.28,
       "errors": []
     }
   ]

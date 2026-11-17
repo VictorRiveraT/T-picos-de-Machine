@@ -73,7 +73,7 @@ def download_one(image_id):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--target", type=int, default=10_000)
+    parser.add_argument("--target", type=int, default=20_000)
     parser.add_argument("--workers", type=int, default=12)
     args = parser.parse_args()
     if args.workers < 1:
