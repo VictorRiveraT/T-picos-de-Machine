@@ -1,0 +1,9 @@
+{
+  "model_id": "open_clip:RN50-quickgelu:openai",
+  "embedding_dim": 1024,
+  "finished_at_utc": "2026-11-25T21:21:57.363935+00:00",
+  "images_total": 20000,
+  "images_added_this_run": 20000,
+  "elapsed_seconds_including_hnsw": 326.02,
+  "images_per_second_this_run": 61.35
+}

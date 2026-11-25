@@ -52,7 +52,9 @@ def main():
                             Jsonb(data[name]["attributes"]), vector)
                            for name, vector in zip(names, vectors)]
                 insert_batch(conn, entries)
-                print(f"Nuevos embeddings: {min(start+args.batch,len(pending))}/{len(pending)}", flush=True)
+                completed = min(start + args.batch, len(pending))
+                if completed == len(pending) or (start // args.batch) % 16 == 0:
+                    print(f"Nuevos embeddings: {completed}/{len(pending)}", flush=True)
         count = conn.execute("SELECT count(*) FROM images").fetchone()[0]
     create_vector_index()
     elapsed = time.perf_counter() - started
