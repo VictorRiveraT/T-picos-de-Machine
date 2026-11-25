@@ -11,9 +11,10 @@ import time
 import numpy as np
 
 from catalogo import connect
+from model_config import MODEL_ID
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 INDEX_SETTINGS = {"m": 32, "ef_construction": 100, "ef_search": 100}
 
 
@@ -76,7 +77,7 @@ def execute(args):
         count, max_id, latest = conn.execute("SELECT count(*), max(id), max(created_at) FROM images").fetchone()
     if max(args.sizes) > count or min(args.sizes) < args.k:
         raise ValueError(f"Los tamaños deben estar entre k={args.k} y las {count} imágenes presentes")
-    key = {"schema": SCHEMA_VERSION, "count": count, "max_id": max_id,
+    key = {"schema": SCHEMA_VERSION, "model_id": MODEL_ID, "count": count, "max_id": max_id,
            "latest": latest.isoformat(), "sizes": args.sizes, "queries": args.queries,
            "k": args.k, "noise": args.noise, "seed": 42,
            "index_settings": INDEX_SETTINGS,

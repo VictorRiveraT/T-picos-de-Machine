@@ -1258,7 +1258,7 @@
             </div>
             <div class="modal-stats-row">
               <span>Espacio Vectorial:</span>
-              <strong>CLIP ViT-B/32 (512-dim)</strong>
+              <strong>OpenCLIP ViT-B/16 LAION-2B (512-dim)</strong>
             </div>
           </div>
         </div>
@@ -1879,7 +1879,7 @@
       pinSeleccionado = pin;
       document.getElementById('modal-img').src = pin.url;
       document.getElementById('modal-title').textContent = pin.caption || 'Fotografía COCO';
-      document.getElementById('modal-desc').textContent = `Imagen id: ${pin.id} indexada en el espacio de características multimodal CLIP ViT-B/32.`;
+      document.getElementById('modal-desc').textContent = `Imagen id: ${pin.id} indexada en el espacio de OpenCLIP ViT-B/16 LAION-2B.`;
       document.getElementById('modal-filename').textContent = pin.id;
       document.getElementById('modal-cos-score').textContent = pin.score;
       document.getElementById('modal-sim-badge').textContent = `${pin.porcentaje}% Similitud`;

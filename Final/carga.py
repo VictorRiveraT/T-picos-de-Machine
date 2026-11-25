@@ -13,6 +13,7 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 from catalogo import connect
+from model_config import MODEL_ID
 
 
 SCHEMA_VERSION = 1
@@ -41,6 +42,7 @@ def ejecutar(args):
         raise ValueError("Solicitudes y niveles de concurrencia deben ser positivos.")
     base_url = args.url.rstrip("/")
     config = {
+        "model_id": MODEL_ID,
         "url": base_url,
         "requests_per_level": args.requests,
         "concurrency": args.concurrency,
