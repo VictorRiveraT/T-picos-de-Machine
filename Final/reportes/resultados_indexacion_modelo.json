@@ -1,0 +1,9 @@
+{
+  "model_id": "open_clip:ViT-B-16:laion2b_s34b_b88k",
+  "embedding_dim": 512,
+  "finished_at_utc": "2026-11-25T21:11:32.608601+00:00",
+  "images_total": 20000,
+  "images_added_this_run": 17456,
+  "elapsed_seconds_including_hnsw": 583.73,
+  "images_per_second_this_run": 29.9
+}

@@ -39,7 +39,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-dir", type=Path, default=Path(__file__).resolve().parent)
     parser.add_argument("--database-url", required=True, help="URL de la base exclusiva del modelo")
-    parser.add_argument("--caption-queries", type=int, default=100)
+    parser.add_argument("--caption-queries", type=int, default=500)
     parser.add_argument("--expected-count", type=int, default=20000)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -53,9 +53,9 @@ def main():
     from catalogo import Catalog, connect
     from embeddings import DEVICE, MODEL_NAME, embed_imagenes, embed_texto, model
     import torch
-    try:
+    if (model_dir / "model_config.py").is_file():
         from model_config import MODEL_ID
-    except ModuleNotFoundError:
+    else:
         MODEL_ID = MODEL_NAME
     rss_after_model = psutil.Process().memory_info().rss
 
@@ -180,6 +180,7 @@ def main():
         "object_queries": len(categories),
         "object_categories": categories,
         "device": DEVICE,
+        "gpu_name": torch.cuda.get_device_name(0) if DEVICE == "cuda" else None,
         "platform": platform.platform(),
         "torch_version": torch.__version__,
         "model_parameters": sum(p.numel() for p in model.parameters()),
@@ -203,7 +204,7 @@ def main():
             "hnsw_overlap_with_exact@10": round(float(np.mean(hnsw_overlap)), 4),
             "text_inference": text_timing,
             "image_inference": image_timing,
-            "image_indexing_throughput_per_second_batch16": round(len(batch_names) / batch_seconds, 2),
+            "image_embedding_throughput_per_second_batch16": round(len(batch_names) / batch_seconds, 2),
             "vector_search_hnsw": {"p50_ms": quantile_ms(hnsw_ms, 50), "p95_ms": quantile_ms(hnsw_ms, 95)},
             "vector_search_exact": {"p50_ms": quantile_ms(exact_ms, 50), "p95_ms": quantile_ms(exact_ms, 95)},
         },

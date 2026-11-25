@@ -1,6 +1,12 @@
-# Reportes de PinSearch
+# Reportes de PinSearch: OpenCLIP ViT-B/16 LAION-2B
 
-## Versión actual: PostgreSQL + pgvector, 20 000 imágenes COCO
+## Comparación nueva de tres modelos
+
+`comparacion_v4.json`, `comparacion_vit_b16.json` y `comparacion_rn50.json` son las mediciones del mismo evaluador `comparar_modelos.py`, con 20 000 imágenes y muestras idénticas. `comparativa_modelos.md` resume sus resultados y limitaciones. `resultados_indexacion_modelo.json` documenta el último tramo de indexación de esta rama; si se reanudó un proceso anterior, su throughput **no** representa el tiempo de las 20 000 imágenes completas.
+
+Las mediciones se hicieron con la misma GPU. Las métricas de objetos usan categorías COCO como proxy y el coseno no es una probabilidad calibrada. Los archivos de la sección siguiente se heredaron de v4 y **no miden OpenCLIP ViT-B/16 LAION-2B**.
+
+## Reportes heredados de v4: PostgreSQL + pgvector, 20 000 imágenes COCO
 
 | Archivo | Evidencia | Repetición |
 | --- | --- | --- |
@@ -11,7 +17,7 @@
 
 El benchmark usa tablas temporales y verifica con `EXPLAIN` que HNSW consulte el índice y el modo exacto haga un barrido. La métrica imagen→imagen usa objetos COCO como referencia semántica parcial, no equivalencias visuales evaluadas por humanos. Las pruebas de carga son locales en CPU y no garantizan el mismo rendimiento en otro equipo. Los JSON guardan configuración y estado de la base; si no cambian, se reutilizan sin recalcular.
 
-## Resultados medidos en este equipo
+## Referencia histórica medida en v4
 
 | Prueba | Resultado |
 | --- | --- |
