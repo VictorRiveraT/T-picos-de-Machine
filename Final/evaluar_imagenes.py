@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 
 from catalogo import Catalog, connect
+from model_config import MODEL_ID
 
 
 def execute(args):
@@ -19,7 +20,7 @@ def execute(args):
     with connect() as conn:
         rows = conn.execute("SELECT filename, attributes->'objetos' FROM images ORDER BY filename").fetchall()
         count, max_id, latest = conn.execute("SELECT count(*), max(id), max(created_at) FROM images").fetchone()
-    key = {"schema": 1, "count": count, "max_id": max_id,
+    key = {"schema": 2, "model_id": MODEL_ID, "count": count, "max_id": max_id,
            "latest": latest.isoformat(), "sample": args.muestra, "seed": 42,
            "target_frequency_range": [25, 4000],
            "script_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}

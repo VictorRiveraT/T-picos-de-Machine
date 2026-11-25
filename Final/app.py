@@ -17,6 +17,7 @@ os.chdir(BASE_DIR)
 
 from embeddings import DEVICE, MODEL_NAME, embed_imagenes, embed_texto, traducir_a_ingles
 from catalogo import ensure_catalog
+from model_config import EMBEDDING_DIM, MODEL_ID
 
 app = FastAPI(
     title="PinSearch - Buscador Multimodal de Imágenes",
@@ -73,10 +74,11 @@ def info_sistema():
     return {
         "nombre": "PinSearch - Buscador Multimodal CLIP con CIR y Docker",
         "total_imagenes": catalogo.count(),
-        "dimension_embedding": 512,
+        "dimension_embedding": EMBEDDING_DIM,
         "base_datos": "PostgreSQL + pgvector",
         "dispositivo": DEVICE,
         "modelo": MODEL_NAME,
+        "model_id": MODEL_ID,
         "indices": ["hnsw", "flat"],
         "indice_por_defecto": "hnsw",
         "cir_soportado": True,

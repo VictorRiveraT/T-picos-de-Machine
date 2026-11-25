@@ -1,37 +1,45 @@
 from functools import lru_cache
 import re
 
+import numpy as np
+import open_clip
 import torch
 from langdetect import DetectorFactory, detect
-from transformers import CLIPModel, CLIPProcessor, MarianMTModel, MarianTokenizer
+from transformers import MarianMTModel, MarianTokenizer
+
+from model_config import EMBEDDING_DIM, MODEL_ARCH, MODEL_NAME, PRETRAINED
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-MODEL_NAME = "openai/clip-vit-base-patch32"
 TRANSLATOR_NAME = "Helsinki-NLP/opus-mt-es-en"
 DetectorFactory.seed = 0
 SPANISH_WORDS = {"un", "una", "unos", "unas", "el", "la", "los", "las", "de", "del", "con", "en", "sobre", "para", "gato", "gatos", "perro", "perros", "durmiendo", "bicicleta", "roja", "rojo", "nieve", "avion", "aviones", "coche", "coches", "auto", "autos", "playa", "taza", "cafe", "persona", "personas", "niño", "niña", "comiendo", "jugando", "volando", "corriendo", "buscando", "imagen", "imagenes", "similar", "similares"}
 
-model = CLIPModel.from_pretrained(MODEL_NAME).to(DEVICE).eval()
-processor = CLIPProcessor.from_pretrained(MODEL_NAME)
+model, _, preprocess = open_clip.create_model_and_transforms(MODEL_ARCH, pretrained=PRETRAINED)
+model = model.to(DEVICE).eval()
+tokenizer = open_clip.get_tokenizer(MODEL_ARCH)
 
 
 def _normalizar(feats):
-    feats = feats / feats.norm(dim=-1, keepdim=True)
-    return feats.cpu().numpy().astype("float32")
+    vectors = torch.nn.functional.normalize(feats.float(), dim=-1).cpu().numpy().astype(np.float32)
+    if vectors.shape[1] != EMBEDDING_DIM:
+        raise RuntimeError(f"{MODEL_NAME} produjo {vectors.shape[1]} dimensiones; se esperaban {EMBEDDING_DIM}")
+    return vectors
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def embed_imagenes(imagenes):
-    """imagenes: lista de PIL.Image -> array (n, 512) normalizado."""
-    inputs = processor(images=imagenes, return_tensors="pt").to(DEVICE)
-    return _normalizar(model.get_image_features(**inputs))
+    if not imagenes:
+        return np.empty((0, EMBEDDING_DIM), dtype=np.float32)
+    batch = torch.stack([preprocess(image.convert("RGB")) for image in imagenes]).to(DEVICE)
+    return _normalizar(model.encode_image(batch))
 
 
-@torch.no_grad()
+@torch.inference_mode()
 def embed_texto(textos):
-    """textos: lista de str -> array (n, 512) normalizado."""
-    inputs = processor(text=textos, return_tensors="pt", padding=True, truncation=True).to(DEVICE)
-    return _normalizar(model.get_text_features(**inputs))
+    if not textos:
+        return np.empty((0, EMBEDDING_DIM), dtype=np.float32)
+    tokens = tokenizer(textos).to(DEVICE)
+    return _normalizar(model.encode_text(tokens))
 
 
 @lru_cache(maxsize=4096)

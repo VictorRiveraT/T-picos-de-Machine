@@ -1,13 +1,15 @@
-"""Carga incremental de embeddings CLIP, captions y atributos en PostgreSQL."""
+"""Calcula todos los embeddings de esta rama sin reutilizar vectores de otro modelo."""
 
 import argparse
+from datetime import datetime, timezone
 import json
+import time
 
-import faiss
 from PIL import Image
 from psycopg.types.json import Jsonb
 
 from catalogo import BASE_DIR, connect, create_vector_index, init_schema
+from model_config import EMBEDDING_DIM, MODEL_ID
 
 
 def insert_batch(conn, entries):
@@ -18,8 +20,9 @@ def insert_batch(conn, entries):
 
 
 def main():
+    started = time.perf_counter()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--batch", type=int, default=32)
+    parser.add_argument("--batch", type=int, default=16)
     args = parser.parse_args()
     if args.batch < 1:
         parser.error("--batch debe ser positivo")
@@ -35,23 +38,6 @@ def main():
     init_schema()
     with connect() as conn:
         existing = {r[0] for r in conn.execute("SELECT filename FROM images")}
-        seed_names = json.loads((BASE_DIR / "archivos.json").read_text(encoding="utf-8"))
-        seed = faiss.read_index(str(BASE_DIR / "index.faiss"))
-        if len(seed_names) != seed.ntotal or seed.d != 512:
-            raise RuntimeError("La semilla FAISS no coincide con archivos.json")
-        for start in range(0, len(seed_names), args.batch):
-            entries = []
-            for i in range(start, min(start + args.batch, len(seed_names))):
-                name = seed_names[i]
-                if name in existing:
-                    continue
-                meta = data[name]
-                entries.append((name, meta["split"], meta["caption"], Jsonb(meta["attributes"]), seed.reconstruct(i)))
-            if entries:
-                insert_batch(conn, entries)
-            if start % 512 == 0:
-                print(f"Semilla: {min(start+args.batch,len(seed_names))}/{len(seed_names)}", flush=True)
-        existing.update(seed_names)
         pending = [name for name in data if name not in existing]
         if pending:
             from embeddings import embed_imagenes
@@ -69,7 +55,20 @@ def main():
                 print(f"Nuevos embeddings: {min(start+args.batch,len(pending))}/{len(pending)}", flush=True)
         count = conn.execute("SELECT count(*) FROM images").fetchone()[0]
     create_vector_index()
-    print(f"PostgreSQL listo: {count} imágenes con embeddings y atributos.")
+    elapsed = time.perf_counter() - started
+    report = {
+        "model_id": MODEL_ID,
+        "embedding_dim": EMBEDDING_DIM,
+        "finished_at_utc": datetime.now(timezone.utc).isoformat(),
+        "images_total": count,
+        "images_added_this_run": len(pending),
+        "elapsed_seconds_including_hnsw": round(elapsed, 2),
+        "images_per_second_this_run": round(len(pending) / elapsed, 2),
+    }
+    output = BASE_DIR / "reportes/resultados_indexacion_modelo.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"PostgreSQL listo: {count} imágenes con embeddings y atributos; {elapsed:.1f}s.")
 
 
 if __name__ == "__main__":

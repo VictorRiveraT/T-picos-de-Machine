@@ -8,13 +8,15 @@ from pathlib import Path
 import numpy as np
 
 from catalogo import BASE_DIR, Catalog, connect
+from model_config import MODEL_ID
 
 
 def execute(args):
     metadata = json.loads((BASE_DIR / "data/coco_metadata.json").read_text(encoding="utf-8"))["records"]
     with connect() as conn:
         count, max_id = conn.execute("SELECT count(*), max(id) FROM images").fetchone()
-    config = {"sample": args.muestra, "seed": 42, "count": count, "max_id": max_id, "schema": 1}
+    config = {"sample": args.muestra, "seed": 42, "count": count, "max_id": max_id, "schema": 2,
+              "model_id": MODEL_ID}
     if args.output.exists() and not args.force:
         prior = json.loads(args.output.read_text(encoding="utf-8"))
         if prior.get("config") == config:

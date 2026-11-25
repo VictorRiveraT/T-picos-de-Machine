@@ -1,16 +1,18 @@
+name: pinsearch-rn50
+
 services:
   db:
     image: pgvector/pgvector:0.8.7-pg17
     environment:
       POSTGRES_USER: pinsearch
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pinsearch_dev}
-      POSTGRES_DB: pinsearch
+      POSTGRES_DB: pinsearch_rn50
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:5435:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pinsearch -d pinsearch"]
+      test: ["CMD-SHELL", "pg_isready -U pinsearch -d pinsearch_rn50"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -20,9 +22,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: pinsearch-multimodal
+    container_name: pinsearch-rn50
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8004:8000"
     volumes:
       - ./imagenes:/app/imagenes
       - ./anotaciones:/app/anotaciones
@@ -31,7 +33,7 @@ services:
       - PORT=8000
       - PYTHONUNBUFFERED=1
       - HF_HOME=/app/data/hf_cache
-      - DATABASE_URL=postgresql://pinsearch:${POSTGRES_PASSWORD:-pinsearch_dev}@db:5432/pinsearch
+      - DATABASE_URL=postgresql://pinsearch:${POSTGRES_PASSWORD:-pinsearch_dev}@db:5432/pinsearch_rn50
     depends_on:
       db:
         condition: service_healthy
